@@ -1,18 +1,27 @@
-//@ts-nocheck
+// @ts-nocheck
 
-import React,{ useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart, FaYoutube, FaTable, FaThLarge, FaFilter } from "react-icons/fa";
 import { useFirebase } from "@/Services/context";
 import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerTrigger,
+  DrawerContent
+} from "@/components/ui/drawer";
+import { Slider } from "@/components/ui/slider";
 
-import { Drawer, DrawerTrigger, DrawerContent } from '@/components/ui/drawer';
-import { Slider } from '@/components/ui/slider';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink
+} from "@/components/ui/pagination";
 
 const TAGS = ['Best Selling', 'New Arrival', 'Recommended', 'Childrens Items', 'Popular Items'];
 
-
-// ✅ Memoized Components
+// Memoized Product Card
 export const ProductCard = React.memo(({ product }) => {
   const { toggleWishList, wishlistIds, toggleCart, cartItems, updateCartQty } = useFirebase();
   const isInWishlist = wishlistIds.includes(product.id);
@@ -56,6 +65,7 @@ export const ProductCard = React.memo(({ product }) => {
   );
 });
 
+// Memoized Table Row
 export const ProductTableRow = React.memo(({ product }) => {
   const { toggleWishList, wishlistIds, toggleCart, cartItems, updateCartQty } = useFirebase();
   const isInWishlist = wishlistIds.includes(product.id);
@@ -93,22 +103,22 @@ export const ProductTableRow = React.memo(({ product }) => {
   );
 });
 
-
-
 const Shop = () => {
   const { searchTerm, products } = useFirebase();
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filteredproducts, setFilteredproducts] = useState([]);
   const [viewMode, setViewMode] = useState('grid');
-
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // Pagination
-  const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(filteredproducts.length / itemsPerPage);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredproducts.slice(start, start + itemsPerPage);
+  }, [filteredproducts, currentPage]);
 
   useEffect(() => {
     const delay = setTimeout(() => {
@@ -122,12 +132,10 @@ const Shop = () => {
       p?.productName?.toLowerCase().includes(debouncedSearch)
     );
 
-    // Apply price filter
     filtered = filtered.filter(
       p => p.salesPrice >= priceRange[0] && p.salesPrice <= priceRange[1]
     );
 
-    // Apply tag filters if any
     if (selectedTags.length > 0) {
       filtered = filtered.filter(p =>
         selectedTags.some(tag => p.tags?.toLowerCase().includes(tag.toLowerCase()))
@@ -137,12 +145,6 @@ const Shop = () => {
     setFilteredproducts(filtered);
     setCurrentPage(1);
   }, [debouncedSearch, products, priceRange, selectedTags]);
-
-  const totalPages = Math.ceil(filteredproducts.length / itemsPerPage);
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredproducts.slice(start, start + itemsPerPage);
-  }, [filteredproducts, currentPage]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev =>
@@ -155,7 +157,7 @@ const Shop = () => {
       {/* Filter Bar */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div className="flex items-center gap-3 flex-wrap">
-          <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+          <Drawer>
             <DrawerTrigger asChild>
               <Button className="flex gap-2 items-center bg-emerald-500 text-white">
                 <FaFilter /> Filter
@@ -170,7 +172,7 @@ const Shop = () => {
                     min={0}
                     max={1000}
                     step={10}
-                    onValueChange={val => setPriceRange(val)}
+                    onValueChange={setPriceRange}
                   />
                   <div className="text-sm text-muted-foreground mt-1">
                     ₹{priceRange[0]} - ₹{priceRange[1]}
@@ -211,7 +213,7 @@ const Shop = () => {
         </div>
       </div>
 
-      {/* Grid or Table View */}
+      {/* View Mode */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
           {paginatedProducts.map(product => (
@@ -239,21 +241,25 @@ const Shop = () => {
         </div>
       )}
 
-      {/* Pagination */}
-      <div className="mt-6 flex justify-center gap-2 flex-wrap">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 border rounded ${currentPage === i + 1 ? 'bg-emerald-400 text-white' : 'bg-white'}`}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      {/* ✅ Pagination - ShadCN UI */}
+      {totalPages > 1 && (
+        <Pagination className="mt-6 justify-center">
+          <PaginationContent>
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  isActive={currentPage === index + 1}
+                  onClick={() => setCurrentPage(index + 1)}
+                >
+                  {index + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 };
 
 export default Shop;
-

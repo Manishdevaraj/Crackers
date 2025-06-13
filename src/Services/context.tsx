@@ -175,6 +175,7 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
     try {
       await signOut(auth);
       setUser(null);
+      window.location.reload();
     } catch (error) {
       console.error("Error signing out:", error);
     }

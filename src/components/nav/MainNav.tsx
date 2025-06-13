@@ -1,12 +1,16 @@
 //@ts-nocheck
 
-
 import { FaUser, FaHeart, FaShoppingCart, FaSearch } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useFirebase } from '@/Services/context';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const MainNav = () => {
-  const { searchTerm, setSearchTerm, cartItems } = useFirebase();
+  const { searchTerm, setSearchTerm, cartItems ,user,signOut} = useFirebase();
   const navigate = useNavigate();
 
   const handleSearch = () => {
@@ -14,74 +18,95 @@ const MainNav = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-4 bg-white shadow-md">
-      
-      {/* Logo */}
-      <div className="flex items-center justify-center md:justify-start w-full md:w-auto">
-        <img src="/logo.png" alt="Logo" className="h-12 object-contain" />
-      </div>
-
-      {/* Search Input */}
-      <div className="flex w-full md:w-1/2 border border-green-500 rounded overflow-hidden">
-        <input
-          type="text"
-          placeholder="Search for items..."
-          className="flex-1 px-4 py-2 focus:outline-none"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button onClick={handleSearch} className="px-4 py-2 bg-green-500 text-white">
-          <FaSearch />
-        </button>
-      </div>
-
-      {/* Icons Section */}
-      <div className="flex items-center gap-6">
+    <header className="bg-white shadow-md px-4 py-4">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         
-        {/* Account */}
-        <div className="relative group cursor-pointer">
-          <div className="flex items-center gap-2">
-            <FaUser />
-            <span>Account</span>
-          </div>
-          <div className="absolute top-full right-0 mt-2 bg-white border rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 w-40">
-            <div
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => navigate('/register')}
-            >
-              Register
-            </div>
-            <div
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => navigate('/login')}
-            >
-              Login
-            </div>
-          </div>
+        {/* Logo */}
+        <div className="flex items-center justify-center md:justify-start w-full md:w-auto">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="h-12 object-contain cursor-pointer"
+            onClick={() => navigate('/')}
+          />
         </div>
 
-        {/* Wishlist */}
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate('/wishlist')}
-        >
-          <FaHeart />
-          <span>Wishlist</span>
+        {/* Search */}
+        <div className="flex w-full md:w-1/2 border border-green-500 rounded overflow-hidden">
+          <input
+            type="text"
+            placeholder="Search for items..."
+            className="flex-1 px-4 py-2 focus:outline-none"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button
+            onClick={handleSearch}
+            className="px-4 py-2 bg-green-500 text-white"
+          >
+            <FaSearch />
+          </button>
         </div>
 
-        {/* Cart */}
-        <div
-          className="relative flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate('/cart')}
-        >
-          <FaShoppingCart />
-          <span>Cart</span>
-          <span className="absolute -top-2 -right-3 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-            {Object.keys(cartItems).length}
-          </span>
+        {/* Icons */}
+        <div className="flex items-center gap-6">
+          
+          {/* Account */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <div className="flex items-center gap-2 cursor-pointer">
+                <FaUser />
+                <span>Account</span>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-40">
+              {!user&&
+              <div>
+                <div
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => navigate('/register')}
+              >
+                Register
+              </div>
+              <div
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => navigate('/login')}
+              >
+                Login
+              </div>
+              </div>}
+              {user&&<div
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => signOut()}
+              >
+                LogOut
+              </div>}
+            </PopoverContent>
+          </Popover>
+
+          {/* Wishlist */}
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => navigate('/wishlist')}
+          >
+            <FaHeart />
+            <span>Wishlist</span>
+          </div>
+
+          {/* Cart */}
+          <div
+            className="relative flex items-center gap-2 cursor-pointer"
+            onClick={() => navigate('/cart')}
+          >
+            <FaShoppingCart />
+            <span>Cart</span>
+            <span className="absolute -top-2 -right-3 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+              {Object.keys(cartItems).length}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 
