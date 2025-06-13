@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useFirebase } from "@/Services/context";
 
-const Register = () => {
+const Register = ({ isDialog = false }) => {
   const navigate = useNavigate();
   const {
     register,
@@ -32,9 +32,9 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-8 px-4">
       <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-8">
-        <div className="text-center mb-6">
+       {!isDialog&& <div className="text-center mb-6">
           <img src="/logo.png" alt="Srinivas Crackers" className="mx-auto h-20" />
-        </div>
+        </div>}
 
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6">
 
@@ -186,8 +186,9 @@ const Register = () => {
 
           {/* Submit */}
           <div className="mt-6 flex justify-between items-center">
-            <Button type="submit" className="bg-green-400 cursor-pointer hover:bg-green-300">Sign Up</Button>
-            <p className="cursor-pointer" onClick={() => navigate('/login')}>Have an account?</p>
+            {!isDialog&&<Button type="submit" className="bg-green-400 cursor-pointer hover:bg-green-300">Sign Up</Button>}
+             {isDialog&&<Button type="submit" className="bg-green-400 cursor-pointer hover:bg-green-300 flex items-center justify-center mx-auto">Save</Button>}
+            {!isDialog&&<p className="cursor-pointer" onClick={() => navigate('/login')}>Have an account?</p>}
           </div>
         </form>
       </div>

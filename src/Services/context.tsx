@@ -51,6 +51,8 @@ interface FirebaseContextType {
   cartItems: any;
   wishlistIds: any[];
   searchTerm: string;
+  TAGS:any;
+  isNewUser:any;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
 }
 
@@ -70,14 +72,36 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState([]);
   const [setting,setSetting]=useState();
+  const [TAGS,setTags]=useState();
+  const [isNewUser,setNewUser]=useState(false);
+
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+  
+    const unsubscribe = onAuthStateChanged(auth, async(firebaseUser) => {
+        const dbUser = await getUser();
+      console.log(dbUser);
+
+      if(!dbUser)
+     {
+      console.log(dbUser);
+
+       setNewUser(true);
+
+     }
+     if(dbUser)
+      {
+
+       setNewUser(false);
+
+     }
+     
       setUser(firebaseUser);
     });
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -114,6 +138,17 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
 
     return () => unsubscribe();
   }, []);
+  useEffect(()=>{
+ const TagsRef = ref(database, "FC/GeneralMaster/Tags");
+    const unsubscribe = onValue(TagsRef, (snapshot) => {
+      const data = snapshot.val();
+     
+        setTags(data);
+      
+    });
+
+    return () => unsubscribe();
+  },[])
   const signIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -167,7 +202,8 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const token = credential?.accessToken;
       const user = result.user;
-      console.log(user);
+      
+      // console.log(user);
     } catch (error) {
       console.error("Google Sign-In Error:", error);
     }
@@ -274,13 +310,17 @@ const updateCartQty = async (
       second: "2-digit",
       hour12: false,
     });
-
+  
     try {
       if (!user || !user.uid) return;
       const dbUser = await getUser();
       const orderId = Date.now().toString();
       const orderRef = ref(database, `FC/CustomerOrder/${user.uid}/${orderId}`);
-
+if(useExistingAddress&&!dbUser?.accounterName)
+  {
+    toast.error('Please update address on profile');
+    return;
+  }
       const orderData = {
         billNo: orderId,
         billProductList: billProductList || [],
@@ -364,7 +404,9 @@ const updateCartQty = async (
         searchTerm,
         setSearchTerm,
         products,
-        setting
+        setting,
+        TAGS,
+        isNewUser
       }}
     >
       {children}

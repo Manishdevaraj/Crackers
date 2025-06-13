@@ -16,8 +16,16 @@ import {
   PaginationItem,
   PaginationLink
 } from "@/components/ui/pagination";
+import toast from "react-hot-toast";
 
-const TAGS = ['Best Selling', 'New Arrival', 'Recommended', 'Childrens Items', 'Popular Items'];
+// const TAGS = ['Best Selling', 'New Arrival', 'Recommended', 'Childrens Items', 'Popular Items'];
+const SORT_OPTIONS = {
+  DEFAULT: 'Default',
+  NAME_ASC: 'Name: A to Z',
+  NAME_DESC: 'Name: Z to A',
+  PRICE_ASC: 'Price: Low to High',
+  PRICE_DESC: 'Price: High to Low',
+};
 
 export const ProductCard = React.memo(({ product }) => {
   const { toggleWishList, wishlistIds, toggleCart, cartItems, updateCartQty } = useFirebase();
@@ -32,14 +40,14 @@ export const ProductCard = React.memo(({ product }) => {
         <p className="text-sm text-gray-500">{product.productName}</p>
       </div>
       <div className="text-center mb-2">
-        <span className="text-emerald-600 font-bold mr-2">₹{product.salesPrice}</span>
-        <span className="text-red-500 line-through">₹{product.beforeDiscPrice}</span>
+        <span className="text-emerald-600 font-bold mr-2">₹{product.salesPrice?.toFixed(2)}</span>
+        <span className="text-red-500 line-through">₹{product.beforeDiscPrice?.toFixed(2)}</span>
       </div>
       <div className="mt-auto flex justify-between items-center">
-        <button><FaYoutube className="text-red-500 text-3xl cursor-pointer" /></button>
+        {product.youtubeURL && <button><FaYoutube className="text-red-500 text-3xl cursor-pointer" /></button>}
         {qty > 0 ? (
-          <div className="flex items-center gap-3 border border-gray-300 rounded-full px-3 py-1 bg-gray-50 shadow-sm w-[120px] mx-auto">
-            <button onClick={() => updateCartQty(product.productId, "dec")} className="w-8 h-8 bg-red-500 text-white rounded-full">−</button>
+          <div className="flex items-center mx-auto gap-2">
+            <button onClick={() => updateCartQty(product.productId, "dec")} className="px-2 py-1 bg-red-500 text-white rounded">−</button>
             <input
               type="number"
               min={1}
@@ -47,14 +55,17 @@ export const ProductCard = React.memo(({ product }) => {
               onChange={(e) => updateCartQty(product.productId, parseInt(e.target.value))}
               className="w-16 text-center border rounded px-2 py-1"
             />
-            <button onClick={() => updateCartQty(product.productId, "inc")} className="w-8 h-8 bg-green-500 text-white rounded-full">+</button>
+            <button onClick={() => updateCartQty(product.productId, "inc")} className="px-2 py-1 bg-green-500 text-white rounded">+</button>
           </div>
         ) : (
           <Button className="bg-green-500 text-white px-6 py-2 rounded-full mx-auto" onClick={() => toggleCart(product)}>
             Add To Cart
           </Button>
         )}
-        <button onClick={() => toggleWishList(product.id)}>
+        <button onClick={() => {
+          toggleWishList(product.id);
+          toast.success(isInWishlist ? 'Product is removed from wishlist' : 'Product is added to wishlist')
+        }}>
           {isInWishlist ? <FaHeart className="text-2xl text-red-500" /> : <CiHeart className="text-3xl" />}
         </button>
       </div>
@@ -72,7 +83,7 @@ export const ProductTableRow = React.memo(({ product }) => {
     <tr className="border-b">
       <td className="p-2"><img src={product.productImageURL} alt="" className="w-20 h-20 object-cover rounded-md" /></td>
       <td className="p-2">{product.productName}</td>
-      <td className="p-2">₹{product.salesPrice}</td>
+      <td className="p-2">₹{product.salesPrice?.toFixed(2)}</td>
       <td className="p-2">
         {qty > 0 ? (
           <div className="flex items-center gap-2">
@@ -91,7 +102,10 @@ export const ProductTableRow = React.memo(({ product }) => {
         )}
       </td>
       <td className="p-2 text-center">
-        <button onClick={() => toggleWishList(product.id)}>
+        <button onClick={() => {
+          toggleWishList(product.id);
+          toast.success(isInWishlist ? 'Product is removed from wishlist' : 'Product is added to wishlist')
+        }}>
           {isInWishlist ? <FaHeart className="text-xl text-red-500" /> : <CiHeart className="text-2xl" />}
         </button>
       </td>
@@ -100,14 +114,15 @@ export const ProductTableRow = React.memo(({ product }) => {
 });
 
 const Shop = () => {
-  const { searchTerm, products } = useFirebase();
+  const { searchTerm, products,TAGS } = useFirebase();
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filteredproducts, setFilteredproducts] = useState([]);
   const [viewMode, setViewMode] = useState('grid');
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortOption, setSortOption] = useState<string>('DEFAULT'); // NEW
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
 
   const totalPages = Math.ceil(filteredproducts.length / itemsPerPage);
 
@@ -138,9 +153,29 @@ const Shop = () => {
       );
     }
 
+    // 🔁 Sorting logic
+   switch (sortOption) {
+  case 'NAME_ASC':
+    filtered.sort((a, b) => a.productName.localeCompare(b.productName));
+    break;
+  case 'NAME_DESC':
+    filtered.sort((a, b) => b.productName.localeCompare(a.productName));
+    break;
+  case 'PRICE_ASC':
+    filtered.sort((a, b) => a.salesPrice - b.salesPrice);
+    break;
+  case 'PRICE_DESC':
+    filtered.sort((a, b) => b.salesPrice - a.salesPrice);
+    break;
+  default:
+    // Default sorting by `sortingorder`
+    filtered.sort((a, b) => (a.sortingorder ?? 0) - (b.sortingorder ?? 0));
+}
+
+
     setFilteredproducts(filtered);
     setCurrentPage(1);
-  }, [debouncedSearch, products, priceRange, selectedTags]);
+  }, [debouncedSearch, products, priceRange, selectedTags, sortOption]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev =>
@@ -221,13 +256,27 @@ const Shop = () => {
                 <div>
                   <h2 className="font-semibold text-lg">Tags</h2>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {TAGS.map(tag => (
+                    {TAGS?.map(tag => (
                       <Button
                         key={tag}
                         variant={selectedTags.includes(tag) ? 'default' : 'outline'}
                         onClick={() => toggleTag(tag)}
                       >
                         {tag}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h2 className="font-semibold text-lg">Sort By</h2>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {Object.entries(SORT_OPTIONS).map(([key, label]) => (
+                      <Button
+                        key={key}
+                        variant={sortOption === key ? 'default' : 'outline'}
+                        onClick={() => setSortOption(key)}
+                      >
+                        {label}
                       </Button>
                     ))}
                   </div>
@@ -276,28 +325,17 @@ const Shop = () => {
         </div>
       )}
 
-      {/* ✅ Pagination UI */}
       {totalPages > 1 && (
         <Pagination className="mt-6 justify-center">
           <PaginationContent>
             <PaginationItem>
-              <PaginationLink
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                isActive={false}
-              >
-                &lt; Previous
-              </PaginationLink>
+              <PaginationLink onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}>&lt; Previous</PaginationLink>
             </PaginationItem>
 
             {renderPageNumbers()}
 
             <PaginationItem>
-              <PaginationLink
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                isActive={false}
-              >
-                Next &gt;
-              </PaginationLink>
+              <PaginationLink onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}>Next &gt;</PaginationLink>
             </PaginationItem>
           </PaginationContent>
         </Pagination>

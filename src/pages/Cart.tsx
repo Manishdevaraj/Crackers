@@ -78,7 +78,13 @@ const Cart = () => {
                             onClick={() => updateCartQty(item.productId, 'dec')}
                             className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full text-lg font-bold"
                           >−</button>
-                          <span className="min-w-[20px] text-center">{item.qty}</span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={item.qty}
+                            onChange={(e) => updateCartQty(item.productId, parseInt(e.target.value))}
+                            className="w-16 text-center border rounded px-2 py-1"
+                          />
                           <button
                             onClick={() => updateCartQty(item.productId, 'inc')}
                             className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white rounded-full text-lg font-bold"
