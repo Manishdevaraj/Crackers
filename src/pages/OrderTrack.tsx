@@ -195,7 +195,7 @@ console.log(orders);
                       <div className="flex justify-between text-sm">
                         <span className="font-medium">{item.productName}</span>
                         <span>
-                          {item.qty} × ₹{item.salesPrice} ={" "}
+                          {item.qty} item × ₹{item.salesPrice} ={" "}
                           <strong>₹{item.qty*item.salesPrice}</strong>
                         </span>
                       </div>

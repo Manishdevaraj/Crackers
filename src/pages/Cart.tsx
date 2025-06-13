@@ -1,5 +1,4 @@
 //@ts-nocheck
-
 import { useFirebase } from '@/Services/context';
 import { CiTrash } from 'react-icons/ci';
 import { FiShoppingCart } from 'react-icons/fi';
@@ -13,12 +12,28 @@ const Cart = () => {
     (acc, item) => acc + item.salesPrice * item.qty,
     0
   );
-
   const navigate = useNavigate();
+  
 
   return (
     <>
-      <div className="px-4 py-8 sm:px-6 md:px-10 bg-gray-50 min-h-screen">
+      <div className="relative px-4 py-8 sm:px-6 md:px-10 bg-gray-50 min-h-screen">
+        {/* Floating Total on Large Screens */}
+        {cartArray.length > 0 && (
+          <div className="hidden lg:block fixed top-24 right-6 z-10 bg-white border shadow-lg p-4 rounded-xl">
+            <p className="text-gray-800 font-semibold text-lg">
+              Total: ₹{totalAmount.toFixed(2)}
+            </p>
+            <button
+              className="mt-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-2 rounded w-full"
+              onClick={() => navigate('/checkout')}
+            >
+              Checkout
+            </button>
+          </div>
+        )}
+
+        {/* Empty Cart */}
         {cartArray.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500 text-center">
             <FiShoppingCart className="text-6xl mb-4" />
@@ -29,7 +44,7 @@ const Cart = () => {
           <>
             {/* Table Section */}
             <div className="overflow-x-auto">
-              <table className="min-w-full bg-white shadow rounded-lg text-sm">
+              <table className="min-w-full bg-white shadow-md rounded-lg text-sm">
                 <thead>
                   <tr className="bg-gray-200 text-gray-700">
                     <th className="text-left p-4">Product</th>
@@ -47,7 +62,7 @@ const Cart = () => {
                         <img
                           src={item.productImageURL}
                           alt={item.productName}
-                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded"
+                          className="w-16 h-16 object-cover rounded"
                         />
                         <span className="text-sm font-medium">{item.productName}</span>
                       </td>
@@ -87,13 +102,26 @@ const Cart = () => {
               </table>
             </div>
 
-            {/* Cart Summary */}
-            <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
+            {/* Mobile Bottom Summary */}
+            <div className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-300 p-4 flex items-center justify-between lg:hidden">
+              <div>
+                <p className="text-base font-medium">Total: ₹{totalAmount.toFixed(2)}</p>
+              </div>
+              <button
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-2 rounded"
+                onClick={() => navigate('/checkout')}
+              >
+                Checkout
+              </button>
+            </div>
+
+            {/* Back to Shop (shown only on large screen below the table) */}
+            <div className="hidden lg:flex justify-between items-center mt-6">
               <p
                 className="text-sm underline text-gray-700 cursor-pointer hover:text-black"
                 onClick={() => navigate('/shop')}
               >
-                Continue Shopping
+                ← Continue Shopping
               </p>
               <div className="text-right">
                 <p className="text-lg font-semibold mb-2">
@@ -103,7 +131,7 @@ const Cart = () => {
                   className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-2 rounded"
                   onClick={() => navigate('/checkout')}
                 >
-                  Check Out
+                  Checkout
                 </button>
               </div>
             </div>

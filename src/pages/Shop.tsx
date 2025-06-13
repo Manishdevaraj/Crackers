@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import React, { useEffect, useState, useMemo } from "react";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart, FaYoutube, FaTable, FaThLarge, FaFilter } from "react-icons/fa";
@@ -11,7 +10,6 @@ import {
   DrawerContent
 } from "@/components/ui/drawer";
 import { Slider } from "@/components/ui/slider";
-
 import {
   Pagination,
   PaginationContent,
@@ -21,7 +19,6 @@ import {
 
 const TAGS = ['Best Selling', 'New Arrival', 'Recommended', 'Childrens Items', 'Popular Items'];
 
-// Memoized Product Card
 export const ProductCard = React.memo(({ product }) => {
   const { toggleWishList, wishlistIds, toggleCart, cartItems, updateCartQty } = useFirebase();
   const isInWishlist = wishlistIds.includes(product.id);
@@ -65,7 +62,6 @@ export const ProductCard = React.memo(({ product }) => {
   );
 });
 
-// Memoized Table Row
 export const ProductTableRow = React.memo(({ product }) => {
   const { toggleWishList, wishlistIds, toggleCart, cartItems, updateCartQty } = useFirebase();
   const isInWishlist = wishlistIds.includes(product.id);
@@ -152,11 +148,55 @@ const Shop = () => {
     );
   };
 
+  const renderPageNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 3;
+    const startPage = Math.max(2, currentPage - 1);
+    const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    pages.push(
+      <PaginationItem key={1}>
+        <PaginationLink isActive={currentPage === 1} onClick={() => setCurrentPage(1)}>
+          1
+        </PaginationLink>
+      </PaginationItem>
+    );
+
+    if (startPage > 2) {
+      pages.push(<PaginationItem key="start-ellipsis"><span className="px-2">...</span></PaginationItem>);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <PaginationItem key={i}>
+          <PaginationLink isActive={currentPage === i} onClick={() => setCurrentPage(i)}>
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    if (endPage < totalPages - 1) {
+      pages.push(<PaginationItem key="end-ellipsis"><span className="px-2">...</span></PaginationItem>);
+    }
+
+    if (totalPages > 1) {
+      pages.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink isActive={currentPage === totalPages} onClick={() => setCurrentPage(totalPages)}>
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    return pages;
+  };
+
   return (
     <div className="min-h-screen px-4 md:px-10 py-10 bg-gray-50">
-      {/* Filter Bar */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 overflow-y-auto">
+        <div className="flex items-center gap-3 flex-wrap overflow-y-auto">
           <Drawer>
             <DrawerTrigger asChild>
               <Button className="flex gap-2 items-center bg-emerald-500 text-white">
@@ -164,7 +204,7 @@ const Shop = () => {
               </Button>
             </DrawerTrigger>
             <DrawerContent>
-              <div className="p-4 space-y-6">
+              <div className="p-4 space-y-6 overflow-y-auto">
                 <div>
                   <h2 className="font-semibold text-lg">Price</h2>
                   <Slider
@@ -178,7 +218,6 @@ const Shop = () => {
                     ₹{priceRange[0]} - ₹{priceRange[1]}
                   </div>
                 </div>
-
                 <div>
                   <h2 className="font-semibold text-lg">Tags</h2>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -196,13 +235,10 @@ const Shop = () => {
               </div>
             </DrawerContent>
           </Drawer>
-
           <p className="text-gray-600 font-medium">
             We found {filteredproducts.length} items!
           </p>
         </div>
-
-        {/* View Mode Switch */}
         <div className="flex gap-2">
           <button onClick={() => setViewMode('grid')} className={`border p-2 rounded ${viewMode === 'grid' ? 'bg-emerald-200' : 'bg-white'}`}>
             <FaThLarge />
@@ -213,7 +249,6 @@ const Shop = () => {
         </div>
       </div>
 
-      {/* View Mode */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
           {paginatedProducts.map(product => (
@@ -241,20 +276,29 @@ const Shop = () => {
         </div>
       )}
 
-      {/* ✅ Pagination - ShadCN UI */}
+      {/* ✅ Pagination UI */}
       {totalPages > 1 && (
         <Pagination className="mt-6 justify-center">
           <PaginationContent>
-            {Array.from({ length: totalPages }).map((_, index) => (
-              <PaginationItem key={index}>
-                <PaginationLink
-                  isActive={currentPage === index + 1}
-                  onClick={() => setCurrentPage(index + 1)}
-                >
-                  {index + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
+            <PaginationItem>
+              <PaginationLink
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                isActive={false}
+              >
+                &lt; Previous
+              </PaginationLink>
+            </PaginationItem>
+
+            {renderPageNumbers()}
+
+            <PaginationItem>
+              <PaginationLink
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                isActive={false}
+              >
+                Next &gt;
+              </PaginationLink>
+            </PaginationItem>
           </PaginationContent>
         </Pagination>
       )}

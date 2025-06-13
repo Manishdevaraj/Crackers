@@ -32,6 +32,7 @@ interface FirebaseContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   gooleSignIn: () => Promise<void>;
+  setting:any;
   signUp: (data: any) => Promise<void>;
   toggleWishList: (productId: string) => Promise<void>;
   toggleCart: (product: any) => Promise<void>;
@@ -68,6 +69,7 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
   const [cartItems, setCartItems] = useState<any>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState([]);
+  const [setting,setSetting]=useState();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -175,6 +177,7 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
     try {
       await signOut(auth);
       setUser(null);
+      toast.success("Successfully logOut!");
       window.location.reload();
     } catch (error) {
       console.error("Error signing out:", error);
@@ -336,6 +339,8 @@ const updateCartQty = async (
   const getBannerUrls = async () => {
     const urlRef = ref(database, `FC/Settings`);
     const snapshot = await get(urlRef);
+    setSetting(snapshot.exists() ? snapshot.val() : null);
+    // console.log(snapshot.exists() ? snapshot.val() : null)
     return snapshot.exists() ? snapshot.val() : null;
   };
 
@@ -359,6 +364,7 @@ const updateCartQty = async (
         searchTerm,
         setSearchTerm,
         products,
+        setting
       }}
     >
       {children}

@@ -1,56 +1,48 @@
 //@ts-nocheck
 
-
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  type CarouselApi
+  type CarouselApi,
 } from "@/components/ui/carousel";
 import { useFirebase } from "@/Services/context";
 import { useEffect, useState } from "react";
 
 const HeroCarousel = () => {
   const [api, setApi] = useState<CarouselApi | null>(null);
-  const [urls, setUrls] = useState<string[]>([]); // Specify the array of strings
-
-  const { getBannerUrls } = useFirebase();
+  const { setting, getBannerUrls } = useFirebase();
 
   useEffect(() => {
     if (!api) return;
-
     const interval = setInterval(() => {
       api.scrollNext();
     }, 4000);
-
     return () => clearInterval(interval);
   }, [api]);
 
   useEffect(() => {
-    const getUrls = async () => {
-      const data = await getBannerUrls();
-      // Assuming bannerImages is in the first element
-      if (data && data.length > 0 && data[0].bannerImages) {
-        setUrls(data[0].bannerImages); // 👈 Fix here
-      }
-    };
-    getUrls();
+    getBannerUrls();
   }, []);
-
+  if(!setting)
+  {
+    return <div className="flex items-center justify-center" >
+      <img src="/loader.svg" className="w-[200px] h-[100px] text-4xl"/>
+    </div>
+  }
   return (
-    <Carousel setApi={setApi} opts={{ loop: true }} className="w-full h-[70vh]">
+    <Carousel setApi={setApi} opts={{ loop: true }} className="w-full">
       <CarouselContent>
-        {urls?.map((url, index) => (
-         <CarouselItem className="w-full h-[90vh]" key={index}>
-  <div className="w-full h-full flex justify-center items-center bg-white">
-    <img
-      src={url}
-      alt={`banner-${index}`}
-      className="w-full max-h-full object-contain" // <--- This is the likely culprit
-    />
-  </div>
-</CarouselItem>
-
+        {setting[0]?.bannerImages?.map((url, index) => (
+          <CarouselItem key={index}>
+            <div className="w-full h-[300px]  md:h-[500px] ">
+              <img
+                src={url}
+                alt={`banner-${index}`}
+                className="w-full h-full object-cover rounded-md"
+              />
+            </div>
+          </CarouselItem>
         ))}
       </CarouselContent>
     </Carousel>

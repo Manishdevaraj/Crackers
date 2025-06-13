@@ -11,8 +11,16 @@ import Shop from "./pages/Shop"
 import Cart from "./pages/Cart"
 import WishList from "./pages/WishList"
 import CheckOut from "./pages/CheckOut"
+import { useFirebase } from "./Services/context"
 
 const App = () => {
+  const {setting,products,cartItems}=useFirebase();
+  if(!setting&&!products&&!cartItems)
+  {
+    return <div className="flex items-center justify-center h-screen" >
+      <img src="/loader.svg" className="w-[200px] h-[100px] text-4xl"/>
+    </div>
+  }
   return (
     <>
      <MainNav />

@@ -35,7 +35,7 @@ const SubNav = () => {
       {/* Mobile Nav */}
 <div className="md:hidden bg-gray-50 flex items-center justify-between px-4 py-2">
   {/* Mobile Menu */}
-  <div className="relative z-50">
+  <div className="">
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button>
