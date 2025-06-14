@@ -12,15 +12,42 @@ import WishList from "./pages/WishList"
 import CheckOut from "./pages/CheckOut"
 import { useFirebase } from "./Services/context"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Register from "./pages/Register"
 import RegisterDialog from "./components/RegisterDialog"
+import { FaWhatsapp } from "react-icons/fa6"
 
 const App = () => {
-  const { setting, products, cartItems, TAGS, user,getUser, setdbUser } = useFirebase();
+  const { setting, products, cartItems, TAGS, user,getUser, setdbUser,userloading } = useFirebase();
   const [openDialog, setOpenDialog] = useState(false);
   const [isNewUser,setNewUser]=useState(false)
   const [toggle,settoggle]=useState(false)
+ // 👇 Drag logic
+    const whatsappRef = useRef(null);
+  const [position, setPosition] = useState({ x: 20, y: 100 });
+  const [dragging, setDragging] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+  // 👇 Drag logic
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (dragging) {
+        setPosition({
+          x: e.clientX - offset.x,
+          y: e.clientY - offset.y
+        });
+      }
+    };
+
+    const handleMouseUp = () => setDragging(false);
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging, offset]);
 
   useEffect(() => {
    const userChk=async()=>{
@@ -49,15 +76,37 @@ const onProfileClick=()=>{
   setNewUser(true);
 
 }
+// console.log(userloading);
+// console.log(setting)
+// console.log(products);
+// console.log(cartItems);
 
-  if (!setting && !products && !cartItems && !TAGS) {
+
+//!setting && !(products.length>0)  && !TAGS&&!user
+  if (!setting && !(products.length>0)  && !TAGS&&userloading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <img src="/loader.svg" className="w-[200px] h-[100px] text-4xl" />
       </div>
     )
   }
+// what app icon configuration
 
+
+  const handleMouseDown = (e) => {
+    const rect = whatsappRef.current.getBoundingClientRect();
+    setOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+    setDragging(true);
+  };
+
+  const openWhatsApp = () => {
+    const phone =  `91${setting[0]?.CellNO}`; // Replace with your number
+    const message = encodeURIComponent("Hi! I want to inquire about your products.");
+    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+  };
   return (
     <>
       <MainNav onProfileClick={onProfileClick} />
@@ -82,6 +131,21 @@ const onProfileClick=()=>{
           </DialogContent>
         </Dialog>
       )}
+
+       {/* 👇 WhatsApp Floating Button */}
+      <div
+        ref={whatsappRef}
+        onMouseDown={handleMouseDown}
+        onClick={openWhatsApp}
+        className="fixed z-50 cursor-move bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg"
+        style={{
+          left: position.x,
+          top: position.y,
+          transition: dragging ? "none" : "0.2s"
+        }}
+      >
+        <FaWhatsapp size={28} />
+      </div>
     </>
   )
 }

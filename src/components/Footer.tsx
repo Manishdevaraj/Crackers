@@ -12,8 +12,13 @@ import {
   FaEnvelope,
   FaPhoneAlt
 } from "react-icons/fa";
+import { useFirebase } from "@/Services/context";
 
 export default function Footer() {
+  const {setting}=useFirebase();
+  if(!setting){
+    return;
+  }
   return (
     <footer className="bg-gray-100 text-gray-800 py-10">
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -53,10 +58,10 @@ export default function Footer() {
 
         {/* Social Icons */}
         <div className="flex sm:justify-start justify-center lg:justify-end gap-4">
-          <a href="#" className="p-2 h-fit bg-white rounded shadow hover:bg-gray-100"><FaFacebookF /></a>
-          <a href="#" className="p-2 h-fit bg-white rounded shadow hover:bg-gray-100"><FaXTwitter /></a>
-          <a href="#" className="p-2 h-fit bg-white rounded shadow hover:bg-gray-100"><FaDribbble /></a>
-          <a href="#" className="p-2 h-fit bg-white rounded shadow hover:bg-gray-100"><FaInstagram /></a>
+          <p onClick={()=>{ window.open(`${setting[0]?.facebook}`, "_blank");}}  className="p-2 h-fit bg-white rounded shadow hover:bg-gray-100"><FaFacebookF /></p>
+          <p onClick={()=>{ window.open(`${setting[0]?.instagram}`, "_blank");}}    className="p-2 h-fit bg-white rounded shadow hover:bg-gray-100"><FaXTwitter /></p>
+          {/* <a href="#" className="p-2 h-fit bg-white rounded shadow hover:bg-gray-100"><FaDribbble /></a> */}
+          <p onClick={()=>{ window.open(`${setting[0]?.instagram}`, "_blank");}}    className="p-2 h-fit bg-white rounded shadow hover:bg-gray-100"><FaInstagram /></p>
         </div>
       </div>
 

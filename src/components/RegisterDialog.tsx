@@ -69,7 +69,7 @@ const RegisterDialog = ({settoggle,toggle}) => {
 
   return (
     <div className="w-full h-[600px] overflow-auto md:min-h-0 flex justify-center items-center px-4 py-8 bg-white">
-      <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-2 ">
+      <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-2 md:gap-4 ">
 
         {/* Row 1: First Name & Phone */}
         <div className="grid md:grid-cols-2 gap-4">

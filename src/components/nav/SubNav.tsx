@@ -11,10 +11,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { useFirebase } from "@/Services/context";
 
 const SubNav = () => {
   const navigate = useNavigate();
-
+  const {setting}=useFirebase();
+  // console.log(setting);
+  if(!setting)
+  {
+    return;
+  }
   return (
     <>
       {/* Desktop Nav */}
@@ -27,7 +33,7 @@ const SubNav = () => {
         <Button className="bg-green-500 text-white">Download Price List</Button>
         <div className="flex items-center justify-end ml-4">
           <FiPhone size={20} />
-          <p className="font-semibold ml-2">+91 8438997458</p>
+          <p className="font-semibold ml-2">+91 {setting[0]?.CellNO}</p>
         </div>
       </div>
 
@@ -61,7 +67,7 @@ const SubNav = () => {
 
   {/* Phone Number */}
   <div className="flex items-center justify-end">
-    <p className="font-semibold text-sm">+91 8438997458</p>
+     <p className="font-semibold ml-2">+91 {setting[0]?.CellNO}</p>
   </div>
 </div>
 

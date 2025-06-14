@@ -55,6 +55,7 @@ interface FirebaseContextType {
   TAGS:any;
   loading:boolean;
   dbuser:any;
+  userloading:any;
   setdbUser: React.Dispatch<React.SetStateAction<any>>;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
 }
@@ -79,6 +80,7 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
   const [loading, setLoading] = useState(false);
   const [dbuser, setdbUser] = useState(null);
 
+  const [userloading, setuserLoading] = useState(true);
  
 
 
@@ -90,6 +92,9 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
         
      
       setUser(firebaseUser);
+      setuserLoading(false);
+    getBannerUrls();
+
     });
     return () => unsubscribe();
   }, [user]);
@@ -142,14 +147,21 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
   },[])
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
+
     } catch (error) {
       console.error("Error signing in:", error);
+      toast.error(error.message);
+    }finally{
+      setLoading(false);
+
     }
   };
 
   const signUp = async (data: any) => {
     try {
+      setLoading(true);
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         data.email,
@@ -181,9 +193,13 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
           customerData
         );
       }
+      setLoading(false);
+
     } catch (error: any) {
       console.error("Error creating user:", error.message);
       toast.error(error.message);
+    }finally{
+      setLoading(false);
     }
   };
   const GsignUp = async (data: any) => {
@@ -218,6 +234,10 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
     } catch (error: any) {
       console.error("Error creating user:", error.message);
       toast.error(error.message);
+    }
+    finally{
+      setLoading(false);
+
     }
   };
 
@@ -434,7 +454,8 @@ if(useExistingAddress&&!dbUser?.accounterName)
         GsignUp,
         loading,
       dbuser, 
-      setdbUser
+      setdbUser,
+      userloading
       }}
     >
       {children}

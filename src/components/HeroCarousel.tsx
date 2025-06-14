@@ -32,8 +32,21 @@ const HeroCarousel = () => {
   }
   return (
     <Carousel setApi={setApi} opts={{ loop: true }} className="w-full">
-      <CarouselContent>
+      <CarouselContent className="hidden md:flex">
         {setting[0]?.bannerImages?.map((url, index) => (
+          <CarouselItem key={index}>
+            <div className="w-full h-[300px]  md:h-[500px] ">
+              <img
+                src={url}
+                alt={`banner-${index}`}
+                className="w-full h-full object-cover rounded-md"
+              />
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselContent className="md:hidden flex">
+        {setting[0]?.bannerImages2?.map((url, index) => (
           <CarouselItem key={index}>
             <div className="w-full h-[300px]  md:h-[500px] ">
               <img
