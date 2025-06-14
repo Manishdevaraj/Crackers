@@ -84,6 +84,13 @@ const MainNav = ({onProfileClick}) => {
               </div>
               <div
                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => navigate('/admin')}
+              >
+                Admin
+              </div>
+
+              <div
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                 onClick={() => signOut()}
               >
                 LogOut
