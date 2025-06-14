@@ -36,6 +36,7 @@ interface FirebaseContextType {
   signUp: (data: any) => Promise<void>;
   toggleWishList: (productId: string) => Promise<void>;
   toggleCart: (product: any) => Promise<void>;
+  GsignUp:() => Promise<void>;
   updateCartQty: (productId: string, type: "inc" | "dec") => Promise<void>;
   placeOrder: (
     billProductList: any[],
@@ -52,7 +53,9 @@ interface FirebaseContextType {
   wishlistIds: any[];
   searchTerm: string;
   TAGS:any;
-  isNewUser:any;
+  loading:boolean;
+  dbuser:any;
+  setdbUser: React.Dispatch<React.SetStateAction<any>>;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
 }
 
@@ -73,7 +76,10 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
   const [products, setProducts] = useState([]);
   const [setting,setSetting]=useState();
   const [TAGS,setTags]=useState();
-  const [isNewUser,setNewUser]=useState(false);
+  const [loading, setLoading] = useState(false);
+  const [dbuser, setdbUser] = useState(null);
+
+ 
 
 
   const navigate = useNavigate();
@@ -81,22 +87,7 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
   useEffect(() => {
   
     const unsubscribe = onAuthStateChanged(auth, async(firebaseUser) => {
-        const dbUser = await getUser();
-      console.log(dbUser);
-
-      if(!dbUser)
-     {
-      console.log(dbUser);
-
-       setNewUser(true);
-
-     }
-     if(dbUser)
-      {
-
-       setNewUser(false);
-
-     }
+        
      
       setUser(firebaseUser);
     });
@@ -190,6 +181,40 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
           customerData
         );
       }
+    } catch (error: any) {
+      console.error("Error creating user:", error.message);
+      toast.error(error.message);
+    }
+  };
+  const GsignUp = async (data: any) => {
+    try {
+      if (!user) return;
+        setLoading(true);
+        const customerData = {
+          accountMasterCode: 0,
+          accounterId: "",
+          accounterName: data.firstName,
+          address: data.address,
+          billingAddress: "",
+          closingBal: 0,
+          companyID: "",
+          district: data.district,
+          gstin: "",
+          id: user.uid,
+          importStatus: false,
+          mobileNo: data.phone,
+          pinCode: data.pinCode,
+          refer: data.referredBy,
+          state: data.state,
+        };
+
+        await set(
+          ref(database, `FC/Customers/${user.uid}`),
+          customerData
+        );
+      toast.success("Account updated successfully!");
+        setLoading(false);
+      
     } catch (error: any) {
       console.error("Error creating user:", error.message);
       toast.error(error.message);
@@ -406,7 +431,10 @@ if(useExistingAddress&&!dbUser?.accounterName)
         products,
         setting,
         TAGS,
-        isNewUser
+        GsignUp,
+        loading,
+      dbuser, 
+      setdbUser
       }}
     >
       {children}

@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const MainNav = () => {
+const MainNav = ({onProfileClick}) => {
   const { searchTerm, setSearchTerm, cartItems ,user,signOut} = useFirebase();
   const navigate = useNavigate();
 
@@ -75,12 +75,20 @@ const MainNav = () => {
                 Login
               </div>
               </div>}
-              {user&&<div
+              {user&&<div>
+                <div
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => onProfileClick()}
+              >
+                Profile
+              </div>
+              <div
                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                 onClick={() => signOut()}
               >
                 LogOut
-              </div>}
+              </div>
+                </div>}
             </PopoverContent>
           </Popover>
 

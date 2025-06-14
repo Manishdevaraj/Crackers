@@ -14,22 +14,41 @@ import { useFirebase } from "./Services/context"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useEffect, useState } from "react"
 import Register from "./pages/Register"
+import RegisterDialog from "./components/RegisterDialog"
 
 const App = () => {
-  const { setting, products, cartItems, TAGS, isNewUser } = useFirebase();
+  const { setting, products, cartItems, TAGS, user,getUser, setdbUser } = useFirebase();
   const [openDialog, setOpenDialog] = useState(false);
+  const [isNewUser,setNewUser]=useState(false)
+  const [toggle,settoggle]=useState(false)
 
   useEffect(() => {
-    if (isNewUser) {
-      setOpenDialog(true);
+   const userChk=async()=>{
+    const dbUser = await getUser();
+   
+         if(!dbUser&&user)
+        {
+   
+          setNewUser(true);
+          setOpenDialog(true);
+   
+        }
+        if(dbUser)
+         {
+          // console.log(dbUser)
+          setNewUser(false);
+          setdbUser(dbUser);
+        }
+   }
+   userChk();
+  }, [user,toggle]);
+// console.log(isNewUser)
+// console.log(user)
+const onProfileClick=()=>{
+  setOpenDialog(!openDialog);
+  setNewUser(true);
 
-      const interval = setInterval(() => {
-        setOpenDialog(true);
-      }, 30000); // 30 seconds
-
-      return () => clearInterval(interval);
-    }
-  }, [isNewUser]);
+}
 
   if (!setting && !products && !cartItems && !TAGS) {
     return (
@@ -41,7 +60,7 @@ const App = () => {
 
   return (
     <>
-      <MainNav />
+      <MainNav onProfileClick={onProfileClick} />
       <SubNav />
       <Routes>
         <Route path='/' element={<Hero />} />
@@ -56,10 +75,10 @@ const App = () => {
         <Route path='/checkout' element={<CheckOut />} />
       </Routes>
 
-      {isNewUser && (
+      {isNewUser&&user?.email && (
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
           <DialogContent className="max-w-3xl">
-            <Register isDialog={true} />
+            <RegisterDialog settoggle={settoggle} toggle={toggle} />
           </DialogContent>
         </Dialog>
       )}
