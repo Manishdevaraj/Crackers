@@ -45,9 +45,11 @@ interface FirebaseContextType {
     formData: any,
     totalAmount: number
   ) => Promise<void>;
+  getCustomerOrders: () => Promise<any>;
   getBannerUrls: () => Promise<any>;
   getUser: () => Promise<any>;
   getOrders: () => Promise<any>;
+  getupdateCustomerOrders:(uid:string,orderid:string)=>Promise<void>;
   products:any,
   cartItems: any;
   wishlistIds: any[];
@@ -117,6 +119,7 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
     });
     return () => unsubscribe();
   }, [user]);
+  
  useEffect(() => {
     const productsRef = ref(database, "FC/Products");
     const unsubscribe = onValue(productsRef, (snapshot) => {
@@ -390,10 +393,10 @@ if(useExistingAddress&&!dbUser?.accounterName)
         pending: 0,
         refer: "",
         statuses: {
-          delivered: false,
-          orderPlaced: false,
-          payment: false,
-          shipped: false,
+          delivered: "false",
+          orderPlaced: "false",
+          payment: "false",
+          shipped: "false",
         },
         totalAmount: totalAmount,
         transportName: "",
@@ -428,6 +431,23 @@ if(useExistingAddress&&!dbUser?.accounterName)
     // console.log(snapshot.exists() ? snapshot.val() : null)
     return snapshot.exists() ? snapshot.val() : null;
   };
+   const getCustomerOrders = async () => {
+    const coRef = ref(database, `FC/CustomerOrder`);
+    const snapshot = await get(coRef);
+    setSetting(snapshot.exists() ? snapshot.val() : null);
+    // console.log(snapshot.exists() ? snapshot.val() : null)
+    return snapshot.exists() ? snapshot.val() : null;
+  };
+  const getupdateCustomerOrders = async (uid,orderid,data) => {
+    const coRef = ref(database, `FC/CustomerOrder/${uid}/${orderid}`);
+     await set(coRef,data);
+     toast.success('updated')
+    // console.log(uid)
+    // console.log(orderid)
+
+    // console.log(data)
+
+  };
 
   return (
     <FirebaseContext.Provider
@@ -455,7 +475,10 @@ if(useExistingAddress&&!dbUser?.accounterName)
         loading,
       dbuser, 
       setdbUser,
-      userloading
+      userloading,
+      getCustomerOrders,
+      getupdateCustomerOrders
+      
       }}
     >
       {children}

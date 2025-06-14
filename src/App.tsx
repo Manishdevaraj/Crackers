@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Route, Routes } from "react-router-dom"
 import Hero from "./pages/Hero"
 import MainNav from "./components/nav/MainNav"
@@ -16,6 +17,7 @@ import { useEffect, useRef, useState } from "react"
 import Register from "./pages/Register"
 import RegisterDialog from "./components/RegisterDialog"
 import { FaWhatsapp } from "react-icons/fa6"
+import Admin from "./pages/Admin"
 
 const App = () => {
   const { setting, products, cartItems, TAGS, user,getUser, setdbUser,userloading } = useFirebase();
@@ -122,6 +124,8 @@ const onProfileClick=()=>{
         <Route path='/cart' element={<Cart />} />
         <Route path='/wishlist' element={<WishList />} />
         <Route path='/checkout' element={<CheckOut />} />
+        <Route path='/admin' element={<Admin />} />
+
       </Routes>
 
       {isNewUser&&user?.email && (

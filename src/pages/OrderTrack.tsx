@@ -1,6 +1,9 @@
 // @ts-nocheck
 import Footer from "@/components/Footer";
 import { useFirebase } from "@/Services/context";
+import { database} from "@/Services/Firebase.config.js";
+
+import { onValue, ref } from "firebase/database";
 import {
   Truck,
   CalendarCheck2,
@@ -23,15 +26,24 @@ const statusSteps = [
 const OrderTrack = () => {
   const [orders, setOrders] = useState({});
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const { getOrders, user } = useFirebase();
+  const { user } = useFirebase();
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const fetched = await getOrders();
-      setOrders(fetched || {});
-    };
-    if (user) fetchOrders();
-  }, [user]);
+  // useEffect(() => {
+  //   const fetchOrders = async () => {
+  //     const fetched = await getOrders();
+  //     setOrders(fetched || {});
+  //   };
+  //   if (user) fetchOrders();
+  // }, [user,getOrders]);
+
+   useEffect(() => {
+      if (!user) return;
+      const cartRef = ref(database, `FC/CustomerOrder/${user.uid}`);
+      const unsubscribe = onValue(cartRef, (snapshot) => {
+        setOrders(snapshot.exists() ? snapshot.val() : {});
+      });
+      return () => unsubscribe();
+    }, [user]);
 
   return (
     <>
@@ -129,10 +141,11 @@ const OrderTrack = () => {
                 </h4>
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   {statusSteps.map((step, index) => {
-                    const completed = selectedOrder.statuses?.[step.key];
+                 
+                    const completed = selectedOrder.statuses?.[step.key] === true || selectedOrder.statuses?.[step.key] === "true";
                     const isShippedStep = step.key === "shipped";
                     const isOrderPlacedStep = step.key === "orderPlaced";
-
+                    // console.log(completed)
                     return (
                       <div
                         key={step.key}
@@ -211,6 +224,9 @@ const OrderTrack = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+                <div className="text-right text-xl font-bold text-gray-800 mt-4">
+                  PackingCharge: ₹{(selectedOrder.packingCharge)?.toFixed(2)}
                 </div>
                 <div className="text-right text-xl font-bold text-gray-800 mt-4">
                   Total: ₹{(selectedOrder.totalAmount + selectedOrder.packingCharge)?.toFixed(2)}
