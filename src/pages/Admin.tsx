@@ -224,11 +224,11 @@ const handelRemoveProduct = (productToRemove) => {
               ))}
             </div>
           </div>
-          <div className="flex gap-3 items-center justify-center">
+          {/* <div className="flex gap-3 items-center justify-center">
 
            <AddProductToShop/>
            <EditProduct/>
-          </div>
+          </div> */}
           <div className="overflow-x-auto shadow-md border rounded-lg">
             <table className="w-full text-sm text-left">
               <thead className="bg-gray-100">

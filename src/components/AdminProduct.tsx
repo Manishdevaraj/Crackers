@@ -11,12 +11,12 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input"; // Assuming you have this component
 import { useFirebase } from "@/Services/context";
 
-import React,{ useState } from "react";
+import React,{ useEffect, useState } from "react";
 
 
 import { storage } from "@/Services/Firebase.config";
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
-import { push, ref as dbRef, set } from "firebase/database";
+import { push, ref as dbRef, set, ref, get } from "firebase/database";
 import { database } from "@/Services/Firebase.config";
 import toast from "react-hot-toast";
 const ProductCard = React.memo(({ product,handleAddProduct }) => {
@@ -153,12 +153,39 @@ export const AddProductToShop = () => {
 
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [generalMaster,setGeneralMaster]=useState();
+  useEffect(()=>{
+           
+         const getCatagory=async()=>{
+                const orderRef = ref(database, `FC/GeneralMaster`);
+                    const snapshot = await get(orderRef);
+                    console.log(snapshot.val());
+                    setGeneralMaster(snapshot.val())
+                    // return snapshot.exists() ?  : null;
+         }
+         getCatagory();
+  },[])
 
   const handleChange = (field: string, value: string | number | boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Auto-calculate Discount Amount and Sales Price
+      const beforeDisc = parseFloat(updated.beforeDiscPrice as string);
+      const discPerc = parseFloat(updated.discPerc as string);
+
+      if (!isNaN(beforeDisc) && !isNaN(discPerc)) {
+        const discAmt = (beforeDisc * discPerc) / 100;
+        const salesPrice = beforeDisc - discAmt;
+        updated.discAmt = discAmt;
+        updated.salesPrice = salesPrice;
+      }
+
+      return updated;
+    });
   };
 
   const handleImageUpload = async () => {
@@ -173,18 +200,19 @@ export const AddProductToShop = () => {
       setLoading(true);
       const imageUrl = await handleImageUpload();
 
-      const ProductdbId = Date.now().toString(); // or use uuid if preferred
+      const ProductdbId = Date.now().toString();
       const finalData = {
         ...formData,
         productImageURL: imageUrl,
-        id:ProductdbId,
+        id: ProductdbId,
       };
-     const productRef = dbRef(database, `FC/Products/${ProductdbId}`);
-     await set(productRef, finalData);
+
+      const productRef = dbRef(database, `FC/Products/${ProductdbId}`);
+      await set(productRef, finalData);
 
       toast.success("Product added successfully!");
 
-      // Reset form
+      // Reset
       setFormData({
         CategoryName: "",
         FlavourCode: "",
@@ -246,94 +274,251 @@ export const AddProductToShop = () => {
           <DialogTitle className="text-xl mb-4">Create Product</DialogTitle>
         </DialogHeader>
 
-     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-  <div>
-    <label>Product Name</label>
-    <Input type="text" placeholder="Product Name" value={formData.productName} onChange={(e) => handleChange("productName", e.target.value)} />
-  </div>
-  <div>
-    <label>Category Name</label>
-    <Input type="text" placeholder="Category Name" value={formData.CategoryName} onChange={(e) => handleChange("CategoryName", e.target.value)} />
-  </div>
-  <div>
-    <label>Product Code</label>
-    <Input type="text" placeholder="Product Code" value={formData.productCode} onChange={(e) => handleChange("productCode", e.target.value)} />
-  </div>
-  <div>
-    <label>Before Discount Price</label>
-    <Input type="number" placeholder="Before Discount Price" value={formData.beforeDiscPrice} onChange={(e) => handleChange("beforeDiscPrice", e.target.value === "" ? "" : +e.target.value)} />
-  </div>
-  <div>
-    <label>Discount Amount</label>
-    <Input type="number" placeholder="Discount Amount" value={formData.discAmt} onChange={(e) => handleChange("discAmt", e.target.value === "" ? "" : +e.target.value)} />
-  </div>
-  <div>
-    <label>Discount %</label>
-    <Input type="number" placeholder="Discount %" value={formData.discPerc} onChange={(e) => handleChange("discPerc", e.target.value)} />
-  </div>
-  <div>
-    <label>GST</label>
-    <Input type="number" placeholder="GST" value={formData.gst} onChange={(e) => handleChange("gst", e.target.value)} />
-  </div>
-  <div>
-    <label>HSN Code</label>
-    <Input type="text" placeholder="HSN Code" value={formData.hsnCode} onChange={(e) => handleChange("hsnCode", e.target.value)} />
-  </div>
-  <div>
-    <label>Sales Price</label>
-    <Input type="number" placeholder="Sales Price" value={formData.salesPrice} onChange={(e) => handleChange("salesPrice", e.target.value === "" ? "" : +e.target.value)} />
-  </div>
-  <div>
-    <label>Flavour Code</label>
-    <Input type="text" placeholder="Flavour Code" value={formData.FlavourCode} onChange={(e) => handleChange("FlavourCode", e.target.value)} />
-  </div>
-  <div>
-    <label>Contains</label>
-    <Input type="text" placeholder="Contains" value={formData.contains} onChange={(e) => handleChange("contains", e.target.value)} />
-  </div>
-  <div>
-    <label>Stock</label>
-    <Input type="number" placeholder="Stock" value={formData.stock} onChange={(e) => handleChange("stock", e.target.value)} />
-  </div>
-  <div>
-    <label>Stock Value</label>
-    <Input type="number" placeholder="Stock Value" value={formData.stockValue} onChange={(e) => handleChange("stockValue", e.target.value === "" ? "" : +e.target.value)} />
-  </div>
-  <div>
-    <label>Rate</label>
-    <Input type="number" placeholder="Rate" value={formData.rate} onChange={(e) => handleChange("rate", e.target.value)} />
-  </div>
-  <div>
-    <label>Margin</label>
-    <Input type="number" placeholder="Margin" value={formData.margin} onChange={(e) => handleChange("margin", e.target.value === "" ? "" : +e.target.value)} />
-  </div>
-  <div>
-    <label>Sorting Order</label>
-    <Input type="number" placeholder="Sorting Order" value={formData.sortingorder} onChange={(e) => handleChange("sortingorder", e.target.value === "" ? "" : +e.target.value)} />
-  </div>
-  <div>
-    <label>UOM ID</label>
-    <Input type="text" placeholder="UOM ID" value={formData.uomid} onChange={(e) => handleChange("uomid", e.target.value)} />
-  </div>
-  <div>
-    <label>YouTube URL</label>
-    <Input type="text" placeholder="YouTube URL" value={formData.youtubeURL} onChange={(e) => handleChange("youtubeURL", e.target.value)} />
-  </div>
-  <div>
-    <label>Upload Image File For Product</label>
-    <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} />
-    {imageFile && (
-      <div className="col-span-2">
-        <p className="font-semibold">New Image Preview:</p>
-        <img
-          src={URL.createObjectURL(imageFile)}
-          alt="New Preview"
-          className="w-32 h-32 object-cover border rounded"
-        />
-      </div>)}
-  </div>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+          <div>
+            <label>Product Id</label>
+            <Input
+              type="text"
+              placeholder="Product Id"
+              value={formData.productId}
+              onChange={(e) => handleChange("productId", e.target.value)}
+            />
+          </div>
+          <div>
+            <label>Product Name</label>
+            <Input
+              type="text"
+              placeholder="Product Name"
+              value={formData.productName}
+              onChange={(e) => handleChange("productName", e.target.value)}
+            />
+          </div>
+
+          {/* <div>
+            <label>Category Name</label>
+            <Input
+              type="text"
+              placeholder="Category Name"
+              value={formData.CategoryName}
+              onChange={(e) => handleChange("CategoryName", e.target.value)}
+            />
+          </div> */}
+          <div>
+  <label>Category Name</label>
+  <select
+    className="w-full border px-2 py-1 rounded"
+    value={formData.CategoryName}
+    onChange={(e) => {
+      const selectedName = e.target.value;
+      const selectedGroup = Object.values(generalMaster?.["Product Group"] || {}).find(
+        (group) => group.generalName === selectedName
+      );
+
+      if (selectedGroup) {
+        handleChange("CategoryName", selectedGroup.generalName);
+        handleChange("productGroupCode", selectedGroup.id); // or generalCode if you prefer
+      }
+    }}
+  >
+    <option value="">Select Category</option>
+    {generalMaster?.["Product Group"] &&
+      Object.values(generalMaster["Product Group"]).map((group) => (
+        <option key={group.id} value={group.generalName}>
+          {group.generalName}
+        </option>
+      ))}
+  </select>
 </div>
 
+
+
+          <div>
+            <label>Before Discount Price</label>
+            <Input
+              type="number"
+              placeholder="Before Discount Price"
+              value={formData.beforeDiscPrice}
+              onChange={(e) =>
+                handleChange("beforeDiscPrice", e.target.value === "" ? "" : +e.target.value)
+              }
+            />
+          </div>
+
+          <div>
+            <label>Discount %</label>
+            <Input
+              type="number"
+              placeholder="Discount %"
+              value={formData.discPerc}
+              onChange={(e) => handleChange("discPerc", e.target.value)}
+            />
+          </div>
+
+          {/* <div>
+            <label>Discount Amount</label>
+            <Input
+              type="number"
+              placeholder="Discount Amount"
+              value={formData.discAmt}
+              readOnly
+            />
+          </div> */}
+
+          <div>
+            <label>Sales Price</label>
+            <Input
+              type="number"
+              placeholder="Sales Price"
+              value={formData.salesPrice}
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label>GST</label>
+            <Input
+              type="number"
+              placeholder="GST"
+              value={formData.gst}
+              onChange={(e) => handleChange("gst", e.target.value)}
+            />
+          </div>
+
+          {/* <div>
+            <label>SGST</label>
+            <Input
+              type="number"
+              placeholder="SGST"
+              value={formData.sgstperc}
+              onChange={(e) => handleChange("sgstperc", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label>CGST</label>
+            <Input
+              type="number"
+              placeholder="CGST"
+              value={formData.cgstperc}
+              onChange={(e) => handleChange("cgstperc", e.target.value)}
+            />
+          </div> */}
+  <div>
+            <label>Per Unit</label>
+            <Input
+              type="number"
+              placeholder="Per"
+              value={formData.per}
+              onChange={(e) => handleChange("per", e.target.value)}
+            />
+          </div>
+
+          {/* <div>
+            <label>Unit</label>
+            <Input
+              type="text"
+              placeholder="Unit"
+              value={formData.uom}
+              onChange={(e) => handleChange("uom", e.target.value)}
+            />
+          </div> */}
+          <div>
+  <label>Unit</label>
+<select
+  className="w-full border px-2 py-1 rounded"
+  value={formData.uom}
+  onChange={(e) => {
+    const selectedId = e.target.value;
+    const selectedGroup = generalMaster?.["UOM"]?.[selectedId];
+    if (selectedGroup) {
+      handleChange("uom", selectedGroup.id); // or use selectedGroup.generalCode if preferred
+    }
+  }}
+>
+  <option value="">Select Unit</option>
+  {generalMaster?.["UOM"] &&
+    Object.values(generalMaster["UOM"]).map((group) => (
+      <option key={group.id} value={group.id}>
+        {group.generalName}
+      </option>
+    ))}
+</select>
+
+</div>
+
+          <div>
+            <label>Contains</label>
+            <Input
+              type="text"
+              placeholder="Contains"
+              value={formData.contains}
+              onChange={(e) => handleChange("contains", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label>Sales Rate</label>
+            <Input
+              type="number"
+              placeholder="Rate"
+              value={formData.rate}
+              onChange={(e) => handleChange("rate", e.target.value)}
+            />
+          </div>
+
+        
+
+          {/* <div>
+            <label>Margin</label>
+            <Input
+              type="number"
+              placeholder="Margin"
+              value={formData.margin}
+              onChange={(e) => handleChange("margin", e.target.value === "" ? "" : +e.target.value)}
+            />
+          </div> */}
+
+          <div>
+            <label>Sorting Order</label>
+            <Input
+              type="number"
+              placeholder="Sorting Order"
+              value={formData.sortingorder}
+              onChange={(e) =>
+                handleChange("sortingorder", e.target.value === "" ? "" : +e.target.value)
+              }
+            />
+          </div>
+
+          <div>
+            <label>YouTube URL</label>
+            <Input
+              type="text"
+              placeholder="YouTube URL"
+              value={formData.youtubeURL}
+              onChange={(e) => handleChange("youtubeURL", e.target.value)}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label>Upload Image File For Product</label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files[0])}
+            />
+            {imageFile && (
+              <div className="mt-2">
+                <p className="font-semibold">New Image Preview:</p>
+                <img
+                  src={URL.createObjectURL(imageFile)}
+                  alt="New Preview"
+                  className="w-32 h-32 object-cover border rounded"
+                />
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="flex justify-end mt-4">
           <Button onClick={handleSubmit} disabled={loading}>
@@ -393,18 +578,47 @@ export const EditProduct=()=>{
   const [selectedProduct, setselectedProduct] = useState(null);
 
   const [loading, setLoading] = useState(false);
+  const [generalMaster,setGeneralMaster]=useState();
+  useEffect(()=>{
+           
+         const getCatagory=async()=>{
+                const orderRef = ref(database, `FC/GeneralMaster`);
+                    const snapshot = await get(orderRef);
+                    console.log(snapshot.val());
+                    setGeneralMaster(snapshot.val())
+                    // return snapshot.exists() ?  : null;
+         }
+         getCatagory();
+  },[selectedProduct])
+  
 
   const filteredProducts = products.filter((item) =>
     item.productName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 const [imageFile, setImageFile] = useState(null);
 
-  const handleChange = (field: string, value: string | number | boolean) => {
-    setselectedProduct((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+   const handleChange = (field: string, value: string | number | boolean) => {
+    setselectedProduct((prev) => {
+      const updated = {
+        ...selectedProduct,
+        [field]: value,
+      };
+
+      // Auto-calculate Discount Amount and Sales Price
+      const beforeDisc = parseFloat(updated.beforeDiscPrice as string);
+      const discPerc = parseFloat(updated.discPerc as string);
+
+      if (!isNaN(beforeDisc) && !isNaN(discPerc)) {
+        const discAmt = (beforeDisc * discPerc) / 100;
+        const salesPrice = beforeDisc - discAmt;
+        updated.discAmt = discAmt;
+        updated.salesPrice = salesPrice;
+      }
+
+      return updated;
+    });
   };
+
 
   const handleImageUpload = async () => {
     if (!imageFile) return "";
@@ -484,102 +698,254 @@ const [imageFile, setImageFile] = useState(null);
 
        {selectedProduct && (
   <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-    
-    <div>
-      <label>Product Name</label>
-      <Input type="text" placeholder="Product Name" value={selectedProduct.productName} onChange={(e) => handleChange("productName", e.target.value)} />
-    </div>
-    <div>
-      <label>Category Name</label>
-      <Input type="text" placeholder="Category Name" value={selectedProduct.CategoryName} onChange={(e) => handleChange("CategoryName", e.target.value)} />
-    </div>
-    <div>
-      <label>Product Code</label>
-      <Input type="text" placeholder="Product Code" value={selectedProduct.productCode} onChange={(e) => handleChange("productCode", e.target.value)} />
-    </div>
-    <div>
-      <label>Before Discount Price</label>
-      <Input type="number" placeholder="Before Discount Price" value={selectedProduct.beforeDiscPrice} onChange={(e) => handleChange("beforeDiscPrice", +e.target.value)} />
-    </div>
-    <div>
-      <label>Discount Amount</label>
-      <Input type="number" placeholder="Discount Amount" value={selectedProduct.discAmt} onChange={(e) => handleChange("discAmt", +e.target.value)} />
-    </div>
-    <div>
-      <label>Discount %</label>
-      <Input type="number" placeholder="Discount %" value={selectedProduct.discPerc} onChange={(e) => handleChange("discPerc", +e.target.value)} />
-    </div>
-    <div>
-      <label>GST</label>
-      <Input type="number" placeholder="GST" value={selectedProduct.gst} onChange={(e) => handleChange("gst", +e.target.value)} />
-    </div>
-    <div>
-      <label>HSN Code</label>
-      <Input type="text" placeholder="HSN Code" value={selectedProduct.hsnCode} onChange={(e) => handleChange("hsnCode", e.target.value)} />
-    </div>
-    <div>
-      <label>Sales Price</label>
-      <Input type="number" placeholder="Sales Price" value={selectedProduct.salesPrice} onChange={(e) => handleChange("salesPrice", +e.target.value)} />
-    </div>
-    <div>
-      <label>Flavour Code</label>
-      <Input type="text" placeholder="Flavour Code" value={selectedProduct.FlavourCode} onChange={(e) => handleChange("FlavourCode", +e.target.value)} />
-    </div>
-    <div>
-      <label>Contains</label>
-      <Input type="text" placeholder="Contains" value={selectedProduct.contains} onChange={(e) => handleChange("contains", e.target.value)} />
-    </div>
-    <div>
-      <label>Stock</label>
-      <Input type="number" placeholder="Stock" value={selectedProduct.stock} onChange={(e) => handleChange("stock", +e.target.value)} />
-    </div>
-    <div>
-      <label>Stock Value</label>
-      <Input type="number" placeholder="Stock Value" value={selectedProduct.stockValue} onChange={(e) => handleChange("stockValue", +e.target.value)} />
-    </div>
-    <div>
-      <label>Rate</label>
-      <Input type="number" placeholder="Rate" value={selectedProduct.rate} onChange={(e) => handleChange("rate", +e.target.value)} />
-    </div>
-    <div>
-      <label>Margin</label>
-      <Input type="number" placeholder="Margin" value={selectedProduct.margin} onChange={(e) => handleChange("margin", +e.target.value)} />
-    </div>
-    <div>
-      <label>Sorting Order</label>
-      <Input type="number" placeholder="Sorting Order" value={selectedProduct.sortingorder} onChange={(e) => handleChange("sortingorder", +e.target.value)} />
-    </div>
-    <div>
-      <label>UOM ID</label>
-      <Input type="text" placeholder="UOM ID" value={selectedProduct.uomid} onChange={(e) => handleChange("uomid", e.target.value)} />
-    </div>
-    <div>
-      <label>YouTube URL</label>
-      <Input type="text" placeholder="YouTube URL" value={selectedProduct.youtubeURL} onChange={(e) => handleChange("youtubeURL", e.target.value)} />
-    </div>
+          <div>
+            <label>Product Id</label>
+            <Input
+              type="text"
+              placeholder="Product Id"
+              value={selectedProduct.productId}
+              onChange={(e) => handleChange("productId", e.target.value)}
+            />
+          </div>
+          <div>
+            <label>Product Name</label>
+            <Input
+              type="text"
+              placeholder="Product Name"
+              value={selectedProduct.productName}
+              onChange={(e) => handleChange("productName", e.target.value)}
+            />
+          </div>
 
-    <div className="col-span-2">
-      <label className="font-semibold">Upload Image File For Product</label>
-      <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} />
-    </div>
+          {/* <div>
+            <label>Category Name</label>
+            <Input
+              type="text"
+              placeholder="Category Name"
+              value={selectedProduct.CategoryName}
+              onChange={(e) => handleChange("CategoryName", e.target.value)}
+            />
+          </div> */}
+         <div>
+  <label>Category Name</label>
+  <select
+    className="w-full border px-2 py-1 rounded"
+    value={selectedProduct.CategoryName}
+    onChange={(e) => {
+      const selectedName = e.target.value;
+      const selectedGroup = Object.values(generalMaster?.["Product Group"] || {}).find(
+        (group) => group.generalName === selectedName
+      );
 
-    {imageFile && (
-      <div className="col-span-2">
-        <p className="font-semibold">New Image Preview:</p>
-        <img
-          src={URL.createObjectURL(imageFile)}
-          alt="New Preview"
-          className="w-32 h-32 object-cover border rounded"
-        />
-      </div>
-    )}
+      if (selectedGroup) {
+        handleChange("CategoryName", selectedGroup.generalName);
+        handleChange("productGroupCode", selectedGroup.id); // or generalCode if you prefer
+      }
+    }}
+  >
+    <option value="">Select Category</option>
+    {generalMaster?.["Product Group"] &&
+      Object.values(generalMaster["Product Group"]).map((group) => (
+        <option key={group.id} value={group.generalName}>
+          {group.generalName}
+        </option>
+      ))}
+  </select>
+</div>
 
-    <div className="col-span-2 flex justify-end mt-4">
-      <Button onClick={handleSubmit} disabled={loading}>
-        {loading ? "Uploading..." : "Edit Product"}
-      </Button>
-    </div>
-  </div>
+          <div>
+            <label>Before Discount Price</label>
+            <Input
+              type="number"
+              placeholder="Before Discount Price"
+              value={selectedProduct.beforeDiscPrice}
+              onChange={(e) =>
+                handleChange("beforeDiscPrice", e.target.value === "" ? "" : +e.target.value)
+              }
+            />
+          </div>
+
+          <div>
+            <label>Discount %</label>
+            <Input
+              type="number"
+              placeholder="Discount %"
+              value={selectedProduct.discPerc}
+              onChange={(e) => handleChange("discPerc", e.target.value)}
+            />
+          </div>
+
+          {/* <div>
+            <label>Discount Amount</label>
+            <Input
+              type="number"
+              placeholder="Discount Amount"
+              value={formData.discAmt}
+              readOnly
+            />
+          </div> */}
+
+          <div>
+            <label>Sales Price</label>
+            <Input
+              type="number"
+              placeholder="Sales Price"
+              value={selectedProduct.salesPrice}
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label>GST</label>
+            <Input
+              type="number"
+              placeholder="GST"
+              value={selectedProduct.gst}
+              onChange={(e) => handleChange("gst", e.target.value)}
+            />
+          </div>
+
+          {/* <div>
+            <label>SGST</label>
+            <Input
+              type="number"
+              placeholder="SGST"
+              value={formData.sgstperc}
+              onChange={(e) => handleChange("sgstperc", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label>CGST</label>
+            <Input
+              type="number"
+              placeholder="CGST"
+              value={formData.cgstperc}
+              onChange={(e) => handleChange("cgstperc", e.target.value)}
+            />
+          </div> */}
+  <div>
+            <label>Per Unit</label>
+            <Input
+              type="number"
+              placeholder="Per"
+              value={selectedProduct.per}
+              onChange={(e) => handleChange("per", e.target.value)}
+            />
+          </div>
+
+          {/* <div>
+            <label>Unit</label>
+            <Input
+              type="text"
+              placeholder="Unit"
+              value={selectedProduct.uom}
+              onChange={(e) => handleChange("uom", e.target.value)}
+            />
+          </div> */}
+                    <div>
+  <label>Unit</label>
+<select
+  className="w-full border px-2 py-1 rounded"
+  value={formData.uom}
+  onChange={(e) => {
+    const selectedId = e.target.value;
+    const selectedGroup = generalMaster?.["UOM"]?.[selectedId];
+    if (selectedGroup) {
+      handleChange("uom", selectedGroup.id); // or use selectedGroup.generalCode if preferred
+    }
+  }}
+>
+  <option value="">Select Unit</option>
+  {generalMaster?.["UOM"] &&
+    Object.values(generalMaster["UOM"]).map((group) => (
+      <option key={group.id} value={group.id}>
+        {group.generalName}
+      </option>
+    ))}
+</select>
+
+</div>
+          <div>
+            <label>Contains</label>
+            <Input
+              type="text"
+              placeholder="Contains"
+              value={selectedProduct.contains}
+              onChange={(e) => handleChange("contains", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label>Sales Rate</label>
+            <Input
+              type="number"
+              placeholder="Rate"
+              value={selectedProduct.rate}
+              onChange={(e) => handleChange("rate", e.target.value)}
+            />
+          </div>
+
+        
+
+          {/* <div>
+            <label>Margin</label>
+            <Input
+              type="number"
+              placeholder="Margin"
+              value={formData.margin}
+              onChange={(e) => handleChange("margin", e.target.value === "" ? "" : +e.target.value)}
+            />
+          </div> */}
+
+          <div>
+            <label>Sorting Order</label>
+            <Input
+              type="number"
+              placeholder="Sorting Order"
+              value={selectedProduct.sortingorder}
+              onChange={(e) =>
+                handleChange("sortingorder", e.target.value === "" ? "" : +e.target.value)
+              }
+            />
+          </div>
+
+          <div>
+            <label>YouTube URL</label>
+            <Input
+              type="text"
+              placeholder="YouTube URL"
+              value={selectedProduct.youtubeURL}
+              onChange={(e) => handleChange("youtubeURL", e.target.value)}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label>Upload Image File For Product</label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files[0])}
+            />
+            {imageFile && (
+              <div className="mt-2">
+                <p className="font-semibold">New Image Preview:</p>
+                <img
+                  src={URL.createObjectURL(imageFile)}
+                  alt="New Preview"
+                  className="w-32 h-32 object-cover border rounded"
+                />
+              </div>
+            )}
+            <div className="flex justify-center mt-4 ">
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? "Uploading..." : "Add Product"}
+          </Button>
+        </div>
+            
+          </div>
+           
+        </div>
 )}
 
       </DialogContent>

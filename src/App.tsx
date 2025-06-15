@@ -18,6 +18,7 @@ import Register from "./pages/Register"
 import RegisterDialog from "./components/RegisterDialog"
 import { FaWhatsapp } from "react-icons/fa6"
 import Admin from "./pages/Admin"
+import ProductAdministration from "./pages/ProductAdministration"
 
 const App = () => {
   const { setting, products, cartItems, TAGS, user,getUser, setdbUser,userloading } = useFirebase();
@@ -125,6 +126,8 @@ const onProfileClick=()=>{
         <Route path='/wishlist' element={<WishList />} />
         <Route path='/checkout' element={<CheckOut />} />
         <Route path='/admin' element={<Admin />} />
+        <Route path='/product-admin' element={<ProductAdministration />} />
+
 
       </Routes>
 
