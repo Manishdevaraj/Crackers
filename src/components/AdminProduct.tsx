@@ -439,7 +439,7 @@ const [imageFile, setImageFile] = useState(null);
   return (
     <Dialog>
       <DialogTrigger>
-        <Button className="text-sm">Edit Product</Button>
+        <Button className="text-sm mb-2">Edit Product</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto p-4">
         <DialogHeader>
