@@ -1,5 +1,5 @@
 //@ts-nocheck
-import AdminProduct from "@/components/AdminProduct";
+import AdminProduct, { AddProductToShop, EditProduct } from "@/components/AdminProduct";
 import { Button } from "@/components/ui/button";
 import { useFirebase } from "@/Services/context";
 import { ArrowRight, Box, CheckCircle2, Package, Truck } from "lucide-react";
@@ -224,7 +224,8 @@ const handelRemoveProduct = (productToRemove) => {
               ))}
             </div>
           </div>
-
+           <AddProductToShop/>
+           <EditProduct/>
           <div className="overflow-x-auto shadow-md border rounded-lg">
             <table className="w-full text-sm text-left">
               <thead className="bg-gray-100">
