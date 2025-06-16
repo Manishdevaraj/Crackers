@@ -21,23 +21,31 @@ import Admin from "./pages/Admin"
 import ProductAdministration from "./pages/ProductAdministration"
 
 const App = () => {
-  const { setting, products, cartItems, TAGS, user,getUser, setdbUser,userloading } = useFirebase();
+  const { setting, products, cartItems, TAGS, user, getUser, setdbUser, userloading } = useFirebase();
   const [openDialog, setOpenDialog] = useState(false);
-  const [isNewUser,setNewUser]=useState(false)
-  const [toggle,settoggle]=useState(false)
- // 👇 Drag logic
-    const whatsappRef = useRef(null);
-  const [position, setPosition] = useState({ x: 20, y: 100 });
+  const [isNewUser, setNewUser] = useState(false);
+  const [toggle, settoggle] = useState(false);
+
+  const whatsappRef = useRef(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-  // 👇 Drag logic
+  // 👇 Set initial position to bottom-right
+  useEffect(() => {
+    setPosition({
+      x: window.innerWidth - 80,
+      y: window.innerHeight - 100
+    });
+  }, []);
+
+  // 👇 Handle dragging
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (dragging) {
         setPosition({
-          x: e.clientX - offset.x,
-          y: e.clientY - offset.y
+          x: Math.max(0, Math.min(e.clientX - offset.x, window.innerWidth - 60)),
+          y: Math.max(0, Math.min(e.clientY - offset.y, window.innerHeight - 60)),
         });
       }
     };
@@ -53,48 +61,32 @@ const App = () => {
   }, [dragging, offset]);
 
   useEffect(() => {
-   const userChk=async()=>{
-    const dbUser = await getUser();
-   
-         if(!dbUser&&user)
-        {
-   
-          setNewUser(true);
-          setOpenDialog(true);
-   
-        }
-        if(dbUser)
-         {
-          // console.log(dbUser)
-          setNewUser(false);
-          setdbUser(dbUser);
-        }
-   }
-   userChk();
-  }, [user,toggle]);
-// console.log(isNewUser)
-// console.log(user)
-const onProfileClick=()=>{
-  setOpenDialog(!openDialog);
-  setNewUser(true);
+    const userChk = async () => {
+      const dbUser = await getUser();
+      if (!dbUser && user) {
+        setNewUser(true);
+        setOpenDialog(true);
+      }
+      if (dbUser) {
+        setNewUser(false);
+        setdbUser(dbUser);
+      }
+    };
+    userChk();
+  }, [user, toggle]);
 
-}
-// console.log(userloading);
-// console.log(setting)
-// console.log(products);
-// console.log(cartItems);
+  const onProfileClick = () => {
+    setOpenDialog(!openDialog);
+    setNewUser(true);
+  };
 
-
-//!setting && !(products.length>0)  && !TAGS&&!user
-  if (!setting && !(products.length>0)  && !TAGS&&userloading) {
+  if (!setting && !(products.length > 0) && !TAGS && userloading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <img src="/loader.svg" className="w-[200px] h-[100px] text-4xl" />
       </div>
-    )
+    );
   }
-// what app icon configuration
-
 
   const handleMouseDown = (e) => {
     const rect = whatsappRef.current.getBoundingClientRect();
@@ -106,10 +98,11 @@ const onProfileClick=()=>{
   };
 
   const openWhatsApp = () => {
-    const phone =  `91${setting[0]?.CellNO}`; // Replace with your number
+    const phone = `91${setting[0]?.CellNO}`;
     const message = encodeURIComponent("Hi! I want to inquire about your products.");
     window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
   };
+
   return (
     <>
       <MainNav onProfileClick={onProfileClick} />
@@ -127,11 +120,9 @@ const onProfileClick=()=>{
         <Route path='/checkout' element={<CheckOut />} />
         <Route path='/admin' element={<Admin />} />
         <Route path='/product-admin' element={<ProductAdministration />} />
-
-
       </Routes>
 
-      {isNewUser&&user?.email && (
+      {isNewUser && user?.email && (
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
           <DialogContent className="max-w-3xl">
             <RegisterDialog settoggle={settoggle} toggle={toggle} />
@@ -139,7 +130,7 @@ const onProfileClick=()=>{
         </Dialog>
       )}
 
-       {/* 👇 WhatsApp Floating Button */}
+      {/* 👇 WhatsApp Floating Button */}
       <div
         ref={whatsappRef}
         onMouseDown={handleMouseDown}
@@ -154,7 +145,7 @@ const onProfileClick=()=>{
         <FaWhatsapp size={28} />
       </div>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
