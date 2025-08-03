@@ -2,15 +2,15 @@
 import { motion } from "framer-motion";
 
 const logos =[
-  '/public/brandlogos/BHEEMA.png',
-  '/public/brandlogos/damo.png',
-  '/public/brandlogos/kalis.png',
-  '/public/brandlogos/mothers.png',
-  '/public/brandlogos/RAMESH SPARKLERS.png',
-  '/public/brandlogos/sparkle logo.png',
-  '/public/brandlogos/sparkle.jpg',
-  '/public/brandlogos/standered logo 2  copy.png',
-  '/public/brandlogos/starvell.png'
+  '/brandlogos/BHEEMA.png',
+  '/brandlogos/damo.png',
+  '/brandlogos/kalis.png',
+  '/brandlogos/mothers.png',
+  '/brandlogos/RAMESH SPARKLERS.png',
+  '/brandlogos/sparkle logo.png',
+  '/brandlogos/sparkle.jpg',
+  '/brandlogos/standered logo 2  copy.png',
+  '/brandlogos/starvell.png'
 
 
 ]
