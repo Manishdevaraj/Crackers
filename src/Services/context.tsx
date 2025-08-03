@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 import { get, onValue, ref, remove, set, push, update } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { app } from "./firebase.config.js";
+import { app } from "./firebase.config.ts";
 import OrderDetailPrint from "@/components/OrderDetailPrint";
 import { renderToStaticMarkup } from "react-dom/server";
 import { getDownloadURL, uploadBytes, uploadBytesResumable ,ref as storageRef,} from "firebase/storage";
