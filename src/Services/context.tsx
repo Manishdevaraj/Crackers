@@ -510,6 +510,8 @@ const updateCartQty = async (
   
     if (digits.startsWith("91") && digits.length === 12) {
       return `+${digits}`;
+
+      
     }
   
     // Fallback: just add + before digits
