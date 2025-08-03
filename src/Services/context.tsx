@@ -15,7 +15,7 @@ import {
   signOut,
   User,
 } from "firebase/auth";
-import { auth, provider, database, storage } from "./Firebase.config.js";
+import { auth, provider, database, storage } from "./Firebase.config.ts";
 import toast from "react-hot-toast";
 import { get, onValue, ref, remove, set, push, update } from "firebase/database";
 import { useNavigate } from "react-router-dom";
@@ -511,7 +511,7 @@ const updateCartQty = async (
     if (digits.startsWith("91") && digits.length === 12) {
       return `+${digits}`;
 
-      
+
     }
   
     // Fallback: just add + before digits
