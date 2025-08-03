@@ -129,7 +129,7 @@ const MainNav = ({onProfileClick}) => {
           {/* Wishlist */}
           <div
             className="flex items-center gap-2 cursor-pointer"
-            onClick={() => navigate('/shop')}
+            onClick={() => navigate('/shop/multibrand')}
           >
             <FaShop />
             <span className="whitespace-nowrap">Shop Now</span>

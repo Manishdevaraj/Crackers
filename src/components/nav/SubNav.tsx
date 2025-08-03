@@ -10,6 +10,9 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSubTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { useFirebase } from "@/Services/context";
 import { FaPhone } from "react-icons/fa6";
@@ -114,28 +117,38 @@ const SubNav = () => {
 <div className="md:hidden bg-gray-50 flex items-center justify-between px-4 py-2">
   {/* Mobile Menu */}
   <div className="">
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button>
-          <Menu className="w-6 h-6" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        sideOffset={8}
-        className="w-56 rounded-md bg-white shadow-lg border p-2 space-y-1"
-      >
-        <DropdownMenuItem onClick={() => navigate('/')}>Home</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/shop')}>Shop Now</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/Wishlist')}>Wish List</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/Cart')}>My Cart</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/track-order')}>Track Order</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/aboutus')}>About Us</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/contactus')}>Contact Us</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/termsandconditions')}>Terms & Conditions</DropdownMenuItem>
-        <DropdownMenuItem onClick={downloadPriceList}>Download Price List</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+  <DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <button>
+      <Menu className="w-6 h-6" />
+    </button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent
+    align="start"
+    sideOffset={8}
+    className="w-56 rounded-md bg-white shadow-lg border p-2 space-y-1"
+  >
+    <DropdownMenuItem onClick={() => navigate('/')}>Home</DropdownMenuItem>
+
+    {/* Submenu for Shop Now */}
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>Shop Now</DropdownMenuSubTrigger>
+      <DropdownMenuSubContent className="w-48 rounded-md bg-white shadow-lg border p-2 space-y-1">
+        <DropdownMenuItem onClick={() => navigate('/shop/multibrand`')}>MULTIBRAND CRACKERS</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/shop/standard')}>STANDARD CRACKERS</DropdownMenuItem>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+
+    <DropdownMenuItem onClick={() => navigate('/Wishlist')}>Wish List</DropdownMenuItem>
+    <DropdownMenuItem onClick={() => navigate('/Cart')}>My Cart</DropdownMenuItem>
+    <DropdownMenuItem onClick={() => navigate('/track-order')}>Track Order</DropdownMenuItem>
+    <DropdownMenuItem onClick={() => navigate('/aboutus')}>About Us</DropdownMenuItem>
+    <DropdownMenuItem onClick={() => navigate('/contactus')}>Contact Us</DropdownMenuItem>
+    <DropdownMenuItem onClick={() => navigate('/termsandconditions')}>Terms & Conditions</DropdownMenuItem>
+    <DropdownMenuItem onClick={downloadPriceList}>Download Price List</DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+
   </div>
 
   {/* Phone Number */}
