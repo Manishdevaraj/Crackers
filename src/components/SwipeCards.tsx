@@ -74,6 +74,7 @@ const SwipeCards = () => {
     }
   }, [stack3]);
   if(cards.length<=0)return;
+  console.log(cards);
   return (<>
           <h1 className="font-bold text-2xl ml-10 mt-2 ">✨ Combo Box</h1>
     <div className="hidden md:flex flex-wrap justify-center gap-4 mt-5">
@@ -184,7 +185,7 @@ const Card = ({ product, cards, setCards, index, toggleCart, autoSwipeDelay }) =
       <ProductCard product={product} />
 
       <a
-        href={productImageURL}
+        href={product.pdfurl}
         target="_blank"
         rel="noopener noreferrer"
         className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-red-500 text-white p-2 rounded-full hover:bg-black transition"
