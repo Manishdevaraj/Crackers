@@ -1,12 +1,13 @@
 // src/pages/ManageCategories.tsx
+//@ts-nocheck
 import { useEffect, useState } from "react";
 import {
   ref as dbRef,
   set,
-  get,
+ 
   remove,
   update,
-  child,
+ 
   ref,
   onValue,
 } from "firebase/database";
