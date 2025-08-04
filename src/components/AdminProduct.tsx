@@ -789,19 +789,33 @@ export const EditProduct=()=>{
             className="mb-4"
           />
           }
-          {!selectedProduct&&<select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full max-w-xs p-2 border border-gray-300 rounded mb-4"
-          >
-            <option value="">All Categories</option>
-            {Array.isArray(Categories) &&
-              Categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-          </select>
+          {!selectedProduct&&
+          // <select
+          //   value={selectedCategory}
+          //   onChange={(e) => setSelectedCategory(e.target.value)}
+          //   className="w-full max-w-xs p-2 border border-gray-300 rounded mb-4"
+          // >
+          //   <option value="">All Categories</option>
+          //   {Array.isArray(Categories) &&
+          //     Categories.map((category) => (
+          //       <option key={category} value={category}>
+          //         {category}
+          //       </option>
+          //     ))}
+          // </select>
+          <select
+  value={selectedCategory}
+  onChange={(e) => setSelectedCategory(e.target.value)}
+  className="border rounded-md px-4 py-2 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+>
+  <option value="">All Categories</option>
+  {Categories?.map((category) => (
+    <option key={category.id} value={category.generalName}>
+      {category.generalName}
+    </option>
+  ))}
+</select>
+
           }
         </DialogHeader>
 
