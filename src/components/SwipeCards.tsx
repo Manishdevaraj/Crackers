@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useFirebase } from "@/Services/context";
 import { MdOutlineDownloadForOffline } from "react-icons/md";
+import { ProductCard } from "@/pages/Shop";
 
 const SwipeCards = () => {
   const [cards, setCards] = useState([]);
@@ -10,7 +11,7 @@ const SwipeCards = () => {
   const [stack2, setStack2] = useState([]);
   const [stack3, setStack3] = useState([]);
 
-  const { getSparklerProducts, toggleCart } = useFirebase();
+  const { getgiftProducts, toggleCart } = useFirebase();
 
   const getRandomStack = (arr, count = 3, avoidIds = []) => {
     const filtered = arr.filter(item => !avoidIds.includes(item.id));
@@ -32,7 +33,7 @@ const SwipeCards = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const products = await getSparklerProducts();
+      const products = await getgiftProducts();
       const safeCards = normalizeCards(products);
       setCards(safeCards);
       setStack1(getRandomStack(safeCards));
@@ -72,12 +73,12 @@ const SwipeCards = () => {
       return () => clearTimeout(timeout);
     }
   }, [stack3]);
-
+  if(cards.length<=0)return;
   return (<>
           <h1 className="font-bold text-2xl ml-10 mt-2 ">✨ Combo Box</h1>
     <div className="hidden md:flex flex-wrap justify-center gap-4 mt-5">
 
-      {[stack1, stack2, stack3].map((stack, idx) => (
+      {[stack1, stack2, stack3]?.map((stack, idx) => (
         <div key={idx} className="relative w-[300px] h-[500px] mx-auto">
           {stack.map((card, i) => (
             <Card
@@ -95,7 +96,7 @@ const SwipeCards = () => {
     </div>
     <div className="md:hidden flex flex-wrap justify-center gap-4 mt-5">
 
-      {[stack1].map((stack, idx) => (
+      {[stack1]?.map((stack, idx) => (
         <div key={idx} className="relative w-[300px] h-[500px] mx-auto">
           {stack.map((card, i) => (
             <Card
@@ -156,7 +157,7 @@ const Card = ({ product, cards, setCards, index, toggleCart, autoSwipeDelay }) =
 
   return (
     <motion.div
-      className={`absolute top-0 left-0 right-0 mx-auto h-96 w-72 origin-bottom rounded-lg bg-white shadow-md overflow-hidden transition-transform ${translateY}`}
+      className={`absolute top-0 left-0 right-0 mx-auto h-fit w-72 origin-bottom rounded-lg bg-white shadow-md overflow-hidden transition-transform ${translateY}`}
       style={{
         x,
         opacity,
@@ -175,11 +176,12 @@ const Card = ({ product, cards, setCards, index, toggleCart, autoSwipeDelay }) =
         }
       }}
     >
-      <img
+      {/* <img
         src={productImageURL}
         alt="Card"
         className="h-full w-full object-contain"
-      />
+      /> */}
+      <ProductCard product={product} />
 
       <a
         href={productImageURL}
@@ -191,12 +193,12 @@ const Card = ({ product, cards, setCards, index, toggleCart, autoSwipeDelay }) =
         <MdOutlineDownloadForOffline />
       </a>
 
-      <button
+      {/* <button
         className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 text-sm font-semibold bg-gradient-to-r from-yellow-400 to-red-500 text-white rounded shadow hover:bg-blue-700 transition"
         onClick={() => toggleCart(product)}
       >
         Add to Cart
-      </button>
+      </button> */}
     </motion.div>
   );
 };

@@ -7,6 +7,8 @@ import {
   remove,
   update,
   child,
+  ref,
+  onValue,
 } from "firebase/database";
 import { database } from "@/Services/Firebase.config.js";
 import toast from "react-hot-toast";
@@ -20,15 +22,26 @@ const ManageCategories = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchCategories = async () => {
-    const snap = await get(
-      child(dbRef(database), "CVC/GeneralMaster/Product Group")
-    );
-    if (snap.exists()) setCategories(snap.val() || {});
-  };
+  // const fetchCategories = async () => {
+  //   const snap = await get(
+  //     child(dbRef(database), "CVC/GeneralMaster/Product Group")
+  //   );
+  //   if (snap.exists()) setCategories(snap.val() || {});
+  // };
 
-  useEffect(() => {
-    fetchCategories();
+  // useEffect(() => {
+  //   fetchCategories();
+  // }, []);
+   useEffect(() => {
+    const CategoriesRef = ref(database, "CSC/GeneralMaster/Product Group");
+  
+    const unsubscribe = onValue(CategoriesRef, (snapshot) => {
+      const data = snapshot.val();
+      setCategories(data);
+     
+    });
+  
+    return () => unsubscribe();
   }, []);
 
   const handleSave = async () => {

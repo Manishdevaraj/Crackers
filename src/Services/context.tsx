@@ -55,6 +55,7 @@ interface FirebaseContextType {
   getOrders: () => Promise<any>;
   getupdateCustomerOrders: (uid: string, orderid: string) => Promise<void>;
   getSparklerProducts:()=>Promise<any>;
+  getgiftProducts:()=>Promise<any>;
   products: any;
   cartItems: any;
   wishlistIds: any[];
@@ -69,6 +70,7 @@ interface FirebaseContextType {
   setdbUser: React.Dispatch<React.SetStateAction<any>>;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   Categories: any;
+  orderloading:any, setorderLoading:any,
 }
 
 // ---- Create Context ----
@@ -93,6 +95,8 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
   const [TAGS, setTags] = useState();
   const [Categories, setCategories] = useState();
   const [loading, setLoading] = useState(false);
+  const [orderloading, setorderLoading] = useState(false);
+
   const [pdfLoading, setPdfLoading] = useState(false);
   const [dbuser, setdbUser] = useState(null);
 
@@ -557,7 +561,7 @@ async function uploadOrderImage(imageFile, orderId) {
     isupi: boolean,
     upiimage: any
   ) => {
-     
+      setorderLoading(true);
     const now = new Date();
     const formattedDate =
       `${String(now.getDate()).padStart(2, "0")}/` +
@@ -780,6 +784,8 @@ async function uploadOrderImage(imageFile, orderId) {
       setPdfLoading(false);
     } finally {
       setPdfLoading(false);
+      setorderLoading(false);
+
     }
   };
 
@@ -861,7 +867,26 @@ async function uploadOrderImage(imageFile, orderId) {
     return [];
   }
 }
+async function getgiftProducts() {
+  const coRef = ref(database, `CSC/Products`);
+  const snapshot = await get(coRef);
 
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+
+    const sparklerProducts = Object.entries(data)
+      .filter(([_, product]) =>
+       
+        product.PriceListName === "COMBO ITEMS ( Multi Brand )"
+      )
+      .map(([id, product]) => ({ id, ...product }));
+     console.log(sparklerProducts);
+    return sparklerProducts;
+  } else {
+    console.log("No data found.");
+    return [];
+  }
+}
 
   return (
     <FirebaseContext.Provider
@@ -898,7 +923,10 @@ async function uploadOrderImage(imageFile, orderId) {
         getSparklerProducts,
         getMultiBrandProducts,
         standardCategories,
-        multiBrandCategories
+        multiBrandCategories,
+        orderloading,
+        setorderLoading,
+        getgiftProducts
       }}
     >
       {children}

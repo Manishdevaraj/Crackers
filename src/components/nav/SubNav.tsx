@@ -134,7 +134,7 @@ const SubNav = () => {
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>Shop Now</DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="w-48 rounded-md bg-white shadow-lg border p-2 space-y-1">
-        <DropdownMenuItem onClick={() => navigate('/shop/multibrand`')}>MULTIBRAND CRACKERS</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/shop/multibrand')}>MULTIBRAND CRACKERS</DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/shop/standard')}>STANDARD CRACKERS</DropdownMenuItem>
       </DropdownMenuSubContent>
     </DropdownMenuSub>

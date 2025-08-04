@@ -329,21 +329,23 @@ const CheckOut = () => {
             {/* proceed Payment */}
             <div className="col-span-2 text-right mt-6">
               <button
-                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 rounded-lg transition duration-200 shadow-md flex ml-auto items-center gap-2"
-                disabled={checkoutItems.length === 0 || loading}
-                onClick={
-                  () => {
-
-                
-
-                  if (!useExistingAddress) {
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 rounded-lg transition duration-200 shadow-md flex ml-auto items-center gap-2 cursor-pointer"
+                disabled={ loading}
+                onClick={() => {
+                 
                     handleSubmit(onSubmit)();
-                  } 
                   if(!formData.name||!formData.district||!formData.state||!formData.addressLine1||!formData.phone||!formData.city||!formData.pinCode)
                   {
                     return;
                   }
+                   if(checkoutItems.length === 0)
+                   {
+                    toast.error("Cart is Empty!");
+                    return;
+                   }
+
                   setShowPayment(true);
+                 
 
                 }}
               ><MdOutlinePayment className="text-2xl"/>
@@ -482,8 +484,8 @@ const CheckOut = () => {
             {/* proceed Payment */}
             <div className="col-span-2 text-right mt-6">
               <button
-                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 rounded-lg transition duration-200 shadow-md flex ml-auto items-center gap-2"
-                disabled={checkoutItems.length === 0 || loading}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 rounded-lg transition duration-200 shadow-md flex ml-auto items-center gap-2 cursor-pointer"
+                disabled={ loading}
                 onClick={() => {
                  
                     handleSubmit(onSubmit)();
@@ -491,6 +493,11 @@ const CheckOut = () => {
                   {
                     return;
                   }
+                   if(checkoutItems.length === 0)
+                   {
+                    toast.error("Cart is Empty!");
+                    return;
+                   }
 
                   setShowPayment(true);
                  
@@ -628,7 +635,7 @@ export default CheckOut;
 const PaymentDetails = ({ setShowDialog,setupiimage,setisUpi }) => {
   const [selectedMethod, setSelectedMethod] = useState('netbanking');
   const [image, setImage] = useState(null);
-
+  const {  orderloading,}=useFirebase();
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     console.log(file);
@@ -700,9 +707,9 @@ const PaymentDetails = ({ setShowDialog,setupiimage,setisUpi }) => {
 
       <button
         className="w-full bg-gradient-to-r from-green-400 to-green-600 text-white font-medium py-2 rounded-md flex items-center justify-center gap-2"
-        onClick={()=>{setShowDialog(true)}}
+        onClick={()=>{setShowDialog(true)}} disabled={!orderloading}
       >
-        ✅ Complete Booking
+       {orderloading?`loading`: `✅ Complete Booking`}
       </button>
     </div>
   );
