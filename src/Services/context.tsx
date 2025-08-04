@@ -877,7 +877,7 @@ async function getgiftProducts() {
     const sparklerProducts = Object.entries(data)
       .filter(([_, product]) =>
        
-        product.PriceListName === "COMBO ITEMS ( Multi Brand )"
+        product.CategoryName === "COMBO ITEMS ( Multi Brand )"
       )
       .map(([id, product]) => ({ id, ...product }));
      console.log(sparklerProducts);

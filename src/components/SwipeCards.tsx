@@ -45,7 +45,7 @@ const SwipeCards = () => {
 
   // Independent stack reset handlers
   const resetStack = async (setter) => {
-    const products = await getSparklerProducts();
+    const products = await getgiftProducts();
     const safeCards = normalizeCards(products);
     setter(getRandomStack(safeCards));
   };
