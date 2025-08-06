@@ -489,7 +489,7 @@ const CheckOut = () => {
                 onClick={() => {
                  
                     handleSubmit(onSubmit)();
-                  if(!formData.name||!formData.district||!formData.state||!formData.addressLine1||!formData.phone||!formData.city||!formData.pinCode)
+                  if(!formData?.name||!formData?.district||!formData?.state||!formData?.addressLine1||!formData.phone||!formData.city||!formData?.pinCode)
                   {
                     return;
                   }
@@ -707,7 +707,7 @@ const PaymentDetails = ({ setShowDialog,setupiimage,setisUpi }) => {
 
       <button
         className="w-full bg-gradient-to-r from-green-400 to-green-600 text-white font-medium py-2 rounded-md flex items-center justify-center gap-2"
-        onClick={()=>{setShowDialog(true)}} disabled={!orderloading}
+        onClick={()=>{setShowDialog(true)}} disabled={orderloading}
       >
        {orderloading?`loading`: `✅ Complete Booking`}
       </button>
