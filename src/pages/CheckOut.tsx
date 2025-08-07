@@ -331,10 +331,10 @@ const CheckOut = () => {
               <button
                 className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 rounded-lg transition duration-200 shadow-md flex ml-auto items-center gap-2 cursor-pointer"
                 disabled={ loading}
-                onClick={() => {
+                onClick={async() => {
                  
-                    handleSubmit(onSubmit)();
-                  if(!formData.name||!formData.district||!formData.state||!formData.addressLine1||!formData.phone||!formData.city||!formData.pinCode)
+                    handleSubmit(await onSubmit)();
+                  if(!useExistingAddress&&(!formData.name||!formData.district||!formData.state||!formData.addressLine1||!formData.phone||!formData.city||!formData.pinCode))
                   {
                     return;
                   }
