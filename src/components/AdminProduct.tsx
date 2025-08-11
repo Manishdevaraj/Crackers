@@ -731,7 +731,7 @@ export const EditProduct=()=>{
   const [generalMaster,setGeneralMaster]=useState();
   useEffect(()=>{
       const getCatagory=async()=>{
-            const orderRef = ref(database, `VTS/GeneralMaster`);
+            const orderRef = ref(database, `SVT/GeneralMaster`);
                 const snapshot = await get(orderRef);
                 setGeneralMaster(snapshot.val())
                 // return snapshot.exists() ?  : null;
@@ -747,10 +747,14 @@ export const EditProduct=()=>{
   const filteredProducts = products.filter((item) => {
     const matchesSearch = item.productName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "" || item.CategoryName === selectedCategory;
+    console.log("Selected Category:", selectedCategory);
+    console.log("matchesSearch:", matchesSearch, "matchesCategory:", matchesCategory);
     return matchesSearch && matchesCategory;
   });
 
   const [imageFile, setImageFile] = useState(null);
+  const [imageFile2, setImageFile2] = useState(null);
+
 
    const handleChange = (field: string, value: string | number | boolean) => {
 
@@ -794,20 +798,29 @@ export const EditProduct=()=>{
 
   const handleImageUpload = async () => {
     if (!imageFile) return "";
-    const imgRef = storageRef(storage, `images/VTS/products/${Date.now()}-${imageFile.name}`);
+    const imgRef = storageRef(storage, `images/SVT/products/${Date.now()}-${imageFile.name}`);
     const snapshot = await uploadBytes(imgRef, imageFile);
+    return await getDownloadURL(snapshot.ref);
+  };
+   const handleImageUpload2 = async () => {
+    if (!imageFile2) return "";
+    const imgRef = storageRef(storage, `images/SVT/products/${Date.now()}-${imageFile2.name}`);
+    const snapshot = await uploadBytes(imgRef, imageFile2);
     return await getDownloadURL(snapshot.ref);
   };
    const handleSubmit = async () => {
     try {
       setLoading(true);
       const imageUrl = await handleImageUpload();
+      const imageUrl2 = await handleImageUpload2();
+
 
       const finalData = {
         ...selectedProduct,
-        productImageURL: imageUrl?imageUrl:selectedProduct.productImageURL,
+        productImageURL: imageUrl ? imageUrl : selectedProduct.productImageURL,
+        productImageURL2: imageUrl2 ? imageUrl2 : selectedProduct.productImageURL2,
       };
-     const productRef = dbRef(database, `VTS/Products/${selectedProduct.id}`);
+     const productRef = dbRef(database, `SVT/Products/${selectedProduct.id}`);
      await set(productRef, finalData);
 
       toast.success("Product updated successfully!");
@@ -819,7 +832,7 @@ export const EditProduct=()=>{
       setLoading(false);
     }
   };
-
+  if(!Categories) return;
   return (
     <Dialog>
       <DialogTrigger>
@@ -838,17 +851,17 @@ export const EditProduct=()=>{
             className="mb-4"
           />
           }
-          {/* {!selectedProduct&&
+          {!selectedProduct&&
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="w-full max-w-xs p-2 border border-gray-300 rounded mb-4"
           >
             <option value="">All Categories</option>
-            {Array.isArray(Categories) &&
-              Categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+            {
+               Object.values(Categories)?.map((category) => (
+                <option key={category.id} value={category.generalName}>
+                  {category.generalName}
                 </option>
               ))}
           </select>
@@ -865,7 +878,7 @@ export const EditProduct=()=>{
 //   ))}
 // </select>
 
-          } */}
+          }
         </DialogHeader>
 
         {/* Scrollable filtered product list */}
@@ -889,6 +902,17 @@ export const EditProduct=()=>{
             <p className="font-semibold">Current Image:</p>
             <img
               src={selectedProduct.productImageURL}
+              alt="Current Product"
+              className="w-32 h-32 object-cover border rounded"
+            />
+          </div>
+          )}
+          {selectedProduct?.productImageURL2 && (
+          <div className="col-span-2">
+           
+            <p className="font-semibold">Current Image:</p>
+            <img
+              src={selectedProduct.productImageURL2}
               alt="Current Product"
               className="w-32 h-32 object-cover border rounded"
             />
@@ -1162,6 +1186,27 @@ export const EditProduct=()=>{
               </div>
             )}
 
+            <div>
+              <label className="block font-medium mb-1">Upload Image File 2 For Product</label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile2(e.target.files[0])}
+              />
+            </div>
+
+            {/* Image Preview */}
+            {imageFile2 && (
+              <div>
+                <p className="font-semibold mb-1">New Image Preview:</p>
+                <img
+                  src={URL.createObjectURL(imageFile2)}
+                  alt="New Preview"
+                  className="w-32 h-32 object-cover border rounded"
+                />
+              </div>
+            )}
+
             {/* Active Checkbox */}
             <div>
               <label className="inline-flex items-center space-x-2">
@@ -1174,6 +1219,7 @@ export const EditProduct=()=>{
                 <span className="text-sm font-medium text-gray-700">Active</span>
               </label>
             </div>
+
 
             {/* Submit Button */}
             <div className="flex justify-center mt-2">
